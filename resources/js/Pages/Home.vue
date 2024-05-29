@@ -65,7 +65,7 @@ function handleImageError() {
     </header> -->
 
     <AuthenticatedLayout>
-        <div class="grid md:grid-cols-12 gap-3 p-4 max-w-[1440px] mx-auto h-full">
+        <div class="grid md:grid-cols-12 gap-3 p-4 container mx-auto h-full">
             <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
                 <GroupList />
             </div>
