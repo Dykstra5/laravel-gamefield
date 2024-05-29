@@ -1,5 +1,9 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import GroupList from '@/Components/app/GroupList.vue'
+import FriendList from '@/Components/app/FriendList.vue';
+import PostList from '@/Components/app/PostList.vue';
+import CreatePost from '@/Components/app/CreatePost.vue';
 
 defineProps({
     canLogin: {
@@ -24,9 +28,55 @@ function handleImageError() {
     document.getElementById('docs-card-content')?.classList.add('!flex-row');
     document.getElementById('background')?.classList.add('!hidden');
 }
+
+
 </script>
 
 <template>
+
     <Head title="GameField" />
-    Test
+
+    <!-- <header class="bg-red-500">
+        <div class="flex flex-row justify-between items-center max-w-[1440px] m-auto">
+            <div>
+                <a href="#">
+                    <img src="" alt="">
+                    logo GameField
+                </a>
+            </div>
+            <div>
+                <TextInput :model="searchKeyword" placeholder="Buscar..." class=" w-full" />
+            </div>
+            <div>
+                <a href="#">
+                    <i>icono luna</i>
+                </a>
+            </div>
+            <div>
+                <div v-if="false">
+                    <a href="#">Perfil</a>
+                </div>
+                <div v-else>
+                    <a href="#">Iniciar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </header> -->
+
+    <div class="grid md:grid-cols-12 gap-3 p-4 max-w-[1440px] mx-auto h-full">
+        <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
+            <GroupList />
+        </div>
+
+        <div class="md:col-span-3 md:order-3 h-full overflow-hidden">
+            <FriendList />
+        </div>
+
+        <div class="md:col-span-6 md:order-2 h-full overflow-hidden flex flex-col">
+            <CreatePost />
+            <PostList class="flex-1"/>
+        </div>
+    </div>
 </template>
+
+<style></style>
