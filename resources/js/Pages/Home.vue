@@ -4,6 +4,7 @@ import GroupList from '@/Components/app/GroupList.vue'
 import FriendList from '@/Components/app/FriendList.vue';
 import PostList from '@/Components/app/PostList.vue';
 import CreatePost from '@/Components/app/CreatePost.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 defineProps({
     canLogin: {
@@ -63,20 +64,23 @@ function handleImageError() {
         </div>
     </header> -->
 
-    <div class="grid md:grid-cols-12 gap-3 p-4 max-w-[1440px] mx-auto h-full">
-        <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
-            <GroupList />
-        </div>
+    <AuthenticatedLayout>
+        <div class="grid md:grid-cols-12 gap-3 p-4 max-w-[1440px] mx-auto h-full">
+            <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
+                <GroupList />
+            </div>
 
-        <div class="md:col-span-3 md:order-3 h-full overflow-hidden">
-            <FriendList />
-        </div>
+            <div class="md:col-span-3 md:order-3 h-full overflow-hidden">
+                <FriendList />
+            </div>
 
-        <div class="md:col-span-6 md:order-2 h-full overflow-hidden flex flex-col">
-            <CreatePost />
-            <PostList class="flex-1"/>
+            <div class="md:col-span-6 md:order-2 h-full overflow-hidden flex flex-col">
+                <CreatePost />
+                <PostList class="flex-1" />
+            </div>
         </div>
-    </div>
+    </AuthenticatedLayout>
+
 </template>
 
 <style></style>
