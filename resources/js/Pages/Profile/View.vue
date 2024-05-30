@@ -8,9 +8,10 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, ref, watch } from 'vue';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
+import { CameraIcon } from '@heroicons/vue/24/solid';
 import { useForm } from '@inertiajs/vue3'
 
-const showNotification = ref(true);
+const showNotification = ref(false);
 const authUser = usePage().props.auth.user;
 const coverImageSrc = ref("");
 const avatarImageSrc = ref("");
@@ -22,6 +23,9 @@ const props = defineProps({
         type: Boolean,
     },
     status: {
+        type: String,
+    },
+    success: {
         type: String,
     },
     user: {
@@ -47,23 +51,46 @@ function ifCoverChange(e) {
     }
 }
 
+function ifAvatarChange(e) {
+    formImages.avatar = e.target.files[0];
+
+    if (formImages.avatar) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            avatarImageSrc.value = reader.result;
+        }
+        reader.readAsDataURL(formImages.avatar);
+        uploadAvatar();
+    }
+}
+
 function removeCover() {
     formImages.cover = null;
     coverImageSrc.value = null;
 }
 
+function removeAvatar() {
+    formImages.avatar = null;
+    avatarImageSrc.value = null;
+}
+
 function uploadCover() {
     showNotification.value = true;
-    formImages.post(route('profile.updateCover'), {
-        onSuccess: function () {
+    formImages.post(route('profile.updateImages'), {
+        onFinish: function () {
             removeCover();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
         },
-        onError: function () {
-            removeCover();
-            console.log('Error');
+    });
+}
+
+function uploadAvatar() {
+    showNotification.value = true;
+    formImages.post(route('profile.updateImages'), {
+        onFinish: function () {
+            removeAvatar();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
@@ -73,15 +100,13 @@ function uploadCover() {
 </script>
 
 <template>
-    <pre>{{ errors }}</pre>
-    <pre>Status: {{ status }}</pre>
     <AuthenticatedLayout>
         <div class="container mx-auto px-4 h-full overflow-auto">
             <div class="relative bg-white group">
                 <img :src="coverImageSrc || user.data.cover_src || '/img/default-cover-red.png'" alt="jajasi"
                     class="w-full h-[300px] object-cover">
 
-                <div class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
+                <div v-if="isMyProfile" class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
                     <div class="mt-2">
                         <button v-if="!coverImageSrc"
                             class="relative flex items-center text-white font-black text-sm bg-gradient-to-tr from-rose-900 to-red-500 hover:to-red-600 hover:from-red-600 transition-all shadow rounded border-2 border-red-600 p-2 opacity-0 group-hover:opacity-100">
@@ -106,21 +131,32 @@ function uploadCover() {
                             </div>
                         </template>
                     </div>
-                    <div v-show="showNotification && status === 'cover-image-updated'" class="flex items-center font-medium text-sm text-white bg-emerald-500 rounded p-3 mt-2 w-fit">
+                    <div v-show="showNotification && success"
+                        class="flex items-center font-medium text-sm text-white bg-emerald-500 rounded p-3 mt-2 w-fit">
                         <CheckCircleIcon class="size-8 mr-1 text-white font-black" />
-                        La cabecera se ha actualizado correctamente
+                        {{ success }}
                     </div>
-                    <div v-show="showNotification && errors.cover" class="flex items-center font-medium text-sm text-white bg-red-500 rounded p-3 mt-2 w-fit">
+                    <div v-show="showNotification && (errors.cover || errors.avatar)"
+                        class="flex items-center font-medium text-sm text-white bg-red-500 rounded p-3 mt-2 w-fit">
                         <XMarkIcon class="size-8 mr-1 text-white font-black" />
-                        {{ errors.cover }}
+                        {{ errors.cover || errors.avatar }}
                     </div>
                 </div>
 
                 <div class="flex">
-                    <img :src="avatarImageSrc || user.data.avatar_src || '/img/default-avatar-red.png'" alt=""
-                        class="rounded-full shadow-md w-[160px] ml-8 -mt-[100px]">
+                    <div
+                        class="flex items-center justify-center relative group/avatar ml-8 -mt-[100px] w-[160px] h-[160px]">
+                        <img :src="avatarImageSrc || user.data.avatar_src || '/img/default-avatar-red.png'" alt=""
+                            class="rounded-full shadow-md w-full h-full bg-gray-950">
+                        <button v-if="!avatarImageSrc && isMyProfile"
+                            class="absolute left-0 top-0 right-0 bottom-0 flex items-center justify-center text-white bg-black/60 rounded-full p-2 opacity-0 group-hover/avatar:opacity-100 cursor-pointer">
+                            <CameraIcon class="size-10 text-gray-200 font-black" />
+                            <input type="file" class="absolute left-0 top-0 bottom-0 right-0 opacity-0"
+                                @change="ifAvatarChange">
+                        </button>
+                    </div>
                     <div class="flex items-center justify-between flex-1 p-3">
-                        <h2 class="font-black text-xl">{{ user.name }}</h2>
+                        <h2 class="font-black text-xl">{{ user.data.name }}</h2>
                         <PrimaryButton v-if="isMyProfile">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                 class="size-5 mr-1">

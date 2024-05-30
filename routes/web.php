@@ -6,22 +6,25 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', [HomeController::class, 'index']
+Route::get(
+    '/',
+    [HomeController::class, 'index']
 )->middleware(['auth', 'verified'])->name('dashboard');
 
 // Por alguna razón esta declaración de ruta da un error que hace que todas las demás rutas declaradas después fallen :)
 // Route::get('/{user:username}', [ProfileController::class, 'index']
 // )->name('profile');
-Route::get('/user/{user:username}', [ProfileController::class, 'index']
+Route::get(
+    '/user/{user:username}',
+    [ProfileController::class, 'index']
 )->name('profile');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/profile/update-cover', [ProfileController::class, 'updateCover'])
-        ->name('profile.updateCover');
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/update-images', [ProfileController::class, 'updateImages'])
+        ->name('profile.updateImages');
+    //     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    //     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
-
+require __DIR__ . '/auth.php';

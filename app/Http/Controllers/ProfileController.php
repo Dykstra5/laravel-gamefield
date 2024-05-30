@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +21,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/View', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'success' => session('success'),
             'user' => new UserResource($user),
         ]);
     }
@@ -64,31 +66,37 @@ class ProfileController extends Controller
     /**
      * Update user cover image.
      */
-    public function updateCover(Request $request)
+    public function updateImages(Request $request)
     {
         $data = $request->validate([
-            'cover' => ['image'],
+            'cover' => ['nullable', 'image'],
+            'avatar' => ['nullable', 'image'],
         ]);
 
         $user = $request->user();
-
+        
         $cover = $data['cover'] ?? null;
-
+        $avatar = $data['avatar'] ?? null;
+        
+        $success = '';
         if ($cover) {
-            $path = $cover->store('covers/' . $user->id, 'public');
+            if ($user->cover_path) {
+                Storage::disk('public')->delete($user->cover_path);
+            }
+            $path = $cover->store('user-' . $user->id, 'public');
             $user->update(['cover_path' => $path]);
+            $success = 'La cabecera se ha actualizado correctamente';
         }
 
-        return back()->with('status', 'cover-image-updated');
-    }
+        if ($avatar) {
+            if ($user->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+            $path = $avatar->store('user-' . $user->id, 'public');
+            $user->update(['avatar_path' => $path]);
+            $success = 'La imagen de perfil se ha actualizado correctamente';
+        }
 
-
-    public function updateAvatar(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'avatar' => ['image'],
-        ]);
-
-        dd($data);
+        return back()->with('success', $success);
     }
 }
