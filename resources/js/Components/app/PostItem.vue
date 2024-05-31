@@ -1,8 +1,13 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { HeartIcon, ChatBubbleOvalLeftIcon } from '@heroicons/vue/24/outline';
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon } from '@heroicons/vue/24/outline';
+import { TrashIcon } from '@heroicons/vue/24/solid';
+import { CursorArrowRaysIcon } from '@heroicons/vue/20/solid';
+import { ChevronDownIcon } from '@heroicons/vue/20/solid'
+import { router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     post: Object,
     id: Number,
 })
@@ -17,21 +22,71 @@ function isImage(attachment) {
     return false;
 }
 
+function deletePost() {
+    if (window.confirm('¿Quieres eliminar este post?')) {
+        router.delete(route('post.destroy', props.post.post_id), {
+            preserveScroll: true,
+        });
+    }
+}
+
 </script>
 
 <template>
     <div class=" bg-white rounded p-4 shadow mb-3">
-        <div class="flex items-center gap-2 mb-3">
-            <a href="javascript:void(0)">
-                <img :src="post.user.avatar_src"
-                    class="w-[48px] h-[48px] rounded-full border-2 hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
-            </a>
-
-            <h4 class=" font-bold">
-                <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
-                    {{ post.user.name }}
+        <div class="flex justify-between gap-2 mb-3">
+            <div class="flex items-center">
+                <a href="javascript:void(0)">
+                    <img :src="post.user.avatar_src"
+                        class="w-[48px] h-[48px] rounded-full border-2 hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                 </a>
-            </h4>
+
+                <h4 class=" ml-2 font-bold">
+                    <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
+                        {{ post.user.name }}
+                    </a>
+                </h4>
+            </div>
+
+            <div>
+                <Menu as="div" class="relative flex items-center h-full">
+                    <div class="flex items-center h-full">
+                        <MenuButton>
+                            <EllipsisHorizontalIcon
+                                class="size-8 p-1 text-black rounded hover:bg-gray-600/10 transition-all"
+                                aria-hidden="true" />
+                        </MenuButton>
+                    </div>
+
+                    <transition enter-active-class="transition duration-100 ease-out"
+                        enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100"
+                        leave-active-class="transition duration-75 ease-in"
+                        leave-from-class="transform scale-100 opacity-100"
+                        leave-to-class="transform scale-95 opacity-0">
+                        <MenuItems
+                            class="absolute top-8 right-0 mt-2 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
+                            <MenuItem v-slot="{ active }">
+                            <button :class="[
+                                active ? 'bg-rose-200' : 'text-black',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                                <CursorArrowRaysIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
+                                Fijar en perfil
+                            </button>
+                            </MenuItem>
+                            <MenuItem v-slot="{ active }">
+                            <button @click="deletePost" :class="[
+                                active ? 'bg-red-500 text-white' : 'text-red-500',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                                <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true" />
+                                Eliminar
+                            </button>
+                            </MenuItem>
+                        </MenuItems>
+                    </transition>
+                </Menu>
+            </div>
         </div>
         <div class="mb-1">
             <Disclosure v-if="post.content.length > 300" v-slot="{ open }">

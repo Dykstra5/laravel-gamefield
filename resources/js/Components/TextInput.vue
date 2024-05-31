@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue';
 
 const model = defineModel({
     type: String,
-    placeholder: String,
     required: true,
 });
 

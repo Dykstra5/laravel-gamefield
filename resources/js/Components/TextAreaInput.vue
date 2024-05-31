@@ -25,6 +25,7 @@ onMounted(() => {
 defineExpose({ focus: () => input.value.focus() });
 
 function adjustHeight() {
+    emit('update:modelValue')
     if (props.autoResize) {   
         input.value.style.height = 'auto';
         // Ajusta la altura al scrollHeight
