@@ -17,6 +17,7 @@ class PostResource extends JsonResource
     {
         return [
             'post_id' => $this->id,
+            'title' => $this->title,
             'content' => $this->body,
             'created_at' => Carbon::parse($this->created_at)
                 ->setTimezone('Europe/Madrid')

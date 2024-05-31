@@ -41,10 +41,14 @@ function deletePost() {
                         class="w-[48px] h-[48px] rounded-full border-2 hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                 </a>
 
-                <h4 class=" ml-2 font-bold">
+                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
                     <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
                         {{ post.user.name }}
                     </a>
+                    <div v-if="post.title" class="flex items-center">
+                        <ChevronDownIcon class="size-5 -rotate-90 hidden md:block" />
+                        <p>{{ post.title }}</p>
+                    </div>
                 </h4>
             </div>
 
@@ -90,9 +94,9 @@ function deletePost() {
         </div>
         <div class="mb-1">
             <Disclosure v-if="post.content.length > 300" v-slot="{ open }">
-                <div v-if="!open" v-html="post.content.substring(0, 300)" />
+                <div v-if="!open" class="ck-content-output break-words" v-html="post.content.substring(0, 300)" />
                 <DisclosurePanel v-else>
-                    <div v-html="post.content" />
+                    <div class="ck-content-output break-words" v-html="post.content" />
                 </DisclosurePanel>
 
                 <div class="flex justify-end">
@@ -101,7 +105,7 @@ function deletePost() {
                     </DisclosureButton>
                 </div>
             </Disclosure>
-            <div v-else v-html="post.content" />
+            <div v-else class="ck-content-output break-words" v-html="post.content" />
         </div>
         <div v-if="post.attachments" class="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <template v-for="attachment of post.attachments">

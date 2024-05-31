@@ -15,7 +15,7 @@ class PostController extends Controller
 
         Post::create($data);
 
-        return back() ;
+        return back();
     }
 
     public function destroy(Post $post)
