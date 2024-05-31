@@ -7,20 +7,7 @@ import CreatePost from '@/Components/app/CreatePost.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 defineProps({
-    canLogin: {
-        type: Boolean,
-    },
-    canRegister: {
-        type: Boolean,
-    },
-    laravelVersion: {
-        type: String,
-        required: true,
-    },
-    phpVersion: {
-        type: String,
-        required: true,
-    },
+    posts: Object,
 });
 
 function handleImageError() {
@@ -65,6 +52,7 @@ function handleImageError() {
     </header> -->
 
     <AuthenticatedLayout>
+        <pre class="text-white">{{ posts.data }}</pre>
         <div class="grid md:grid-cols-12 gap-3 p-4 container mx-auto h-full">
             <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
                 <GroupList />
@@ -76,7 +64,7 @@ function handleImageError() {
 
             <div class="md:col-span-6 md:order-2 h-full overflow-hidden flex flex-col">
                 <CreatePost />
-                <PostList class="flex-1" />
+                <PostList :posts="posts.data" class="flex-1" />
             </div>
         </div>
     </AuthenticatedLayout>

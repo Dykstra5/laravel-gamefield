@@ -25,7 +25,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
             </Disclosure>
         </div>
 
-        <div class="h-full overflow-hidden hidden md:block">
+        <div class="h-full overflow-hidden hidden md:block text-center">
             <h2 class=" text-xl font-bold"> Mis temas favoritos </h2>
             <GroupListItems />
         </div>

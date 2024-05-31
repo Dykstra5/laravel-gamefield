@@ -25,7 +25,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
             </Disclosure>
         </div>
 
-        <div class="h-full overflow-hidden hidden md:block">
+        <div class="h-full overflow-hidden hidden md:block text-center">
             <h2 class=" text-xl font-bold"> Amigos </h2>
             <FriendListItems />
         </div>
