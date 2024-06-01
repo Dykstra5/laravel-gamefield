@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
 use App\Models\PostAttachment;
+use Illuminate\Contracts\Mail\Attachable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -60,5 +61,14 @@ class PostController extends Controller
         $post->delete();
 
         return back();
+    }
+
+    public function downloadAttachment(PostAttachment $attachment)
+    {
+        if (!Storage::disk('public')->exists($attachment->path)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->download(Storage::disk('public')->path($attachment->path), $attachment->name);
     }
 }

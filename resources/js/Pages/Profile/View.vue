@@ -103,7 +103,7 @@ function uploadAvatar() {
         <div class="container mx-auto px-4 h-full overflow-auto">
             <div class="relative bg-white group">
                 <img :src="coverImageSrc || user.data.cover_src || '/img/default-cover-red.png'" alt="jajasi"
-                    class="w-full h-[300px] object-cover">
+                    class="w-full h-[300px] object-cover bg-[#922828]">
 
                 <div v-if="isMyProfile" class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
                     <div class="mt-2">

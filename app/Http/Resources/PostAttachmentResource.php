@@ -16,7 +16,7 @@ class PostAttachmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'post_id' => $this->id,
+            'attachment_id' => $this->id,
             'name' => $this->name,
             'mime' => $this->mime,
             'size' => $this->size,

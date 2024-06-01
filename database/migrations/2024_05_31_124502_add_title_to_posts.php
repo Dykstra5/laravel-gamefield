@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->string('title', 25)->nullable()->after('id'); // Definición de la nueva columna
+            $table->string('title', 15)->nullable()->after('id'); // Definición de la nueva columna
         });
     }
 

@@ -10,6 +10,7 @@ import { isImage } from '@/functions';
 
 const props = defineProps({
     post: Object,
+    attachment: Object,
     id: Number,
 })
 
@@ -20,7 +21,6 @@ function deletePost() {
         });
     }
 }
-
 </script>
 
 <template>
@@ -28,8 +28,8 @@ function deletePost() {
         <div class="flex justify-between gap-2 mb-3">
             <div class="flex items-center">
                 <a href="javascript:void(0)" class="w-[48px] h-[48px]">
-                    <img :src="post.user.avatar_src"
-                        class="w-full h-full rounded-full border-2 hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
+                    <img :src="post.user.avatar_src || '/img/default-avatar-red.png'"
+                        class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                 </a>
 
                 <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
@@ -106,14 +106,15 @@ function deletePost() {
             <template v-for="attachment of post.attachments">
                 <div
                     class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative">
-                    <button
+                    <a :href="route('post.download', attachment.attachment_id)"
                         class="absolute right-2 top-2 bg-red-900 hover:bg-red-950 p-1 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                         <ArrowDownTrayIcon class="size-5 text-white" />
-                    </button>
-                    <img v-if="isImage(attachment)" :src="attachment.url" :alt="attachment.name" class=" object-contain aspect-square">
+                    </a>
+                    <img v-if="isImage(attachment)" :src="attachment.url" :alt="attachment.name"
+                        class=" object-contain aspect-square">
                     <template v-else
                         class=" aspect-square bg-blue-100 flex flex-col items-center justify-center  text-gray-500">
-                        <DocumentDuplicateIcon class=" max-w-12 max-h-12"/>
+                        <DocumentDuplicateIcon class=" max-w-12 max-h-12" />
                         <small>{{ attachment.name }}</small>
                     </template>
                 </div>
