@@ -24,33 +24,6 @@ function handleImageError() {
 
     <Head title="GameField" />
 
-    <!-- <header class="bg-red-500">
-        <div class="flex flex-row justify-between items-center max-w-[1440px] m-auto">
-            <div>
-                <a href="#">
-                    <img src="" alt="">
-                    logo GameField
-                </a>
-            </div>
-            <div>
-                <TextInput :model="searchKeyword" placeholder="Buscar..." class=" w-full" />
-            </div>
-            <div>
-                <a href="#">
-                    <i>icono luna</i>
-                </a>
-            </div>
-            <div>
-                <div v-if="false">
-                    <a href="#">Perfil</a>
-                </div>
-                <div v-else>
-                    <a href="#">Iniciar Sesión</a>
-                </div>
-            </div>
-        </div>
-    </header> -->
-
     <AuthenticatedLayout>
         <div class="grid md:grid-cols-12 gap-3 p-4 container mx-auto h-full">
             <div class="md:col-span-3 md:order-1 h-full overflow-hidden">

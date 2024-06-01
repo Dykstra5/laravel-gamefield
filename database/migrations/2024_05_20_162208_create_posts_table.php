@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->longText('body')->nullable();
-            $table->string('title', 25)->nullable();
+            $table->string('title', 15)->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('group_id')->nullable()->constrained('groups');
             $table->foreignId('deleted_by')->nullable()->constrained('users');

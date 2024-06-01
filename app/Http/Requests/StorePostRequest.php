@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\File;
+use Ramsey\Uuid\Guid\Fields;
 
 class StorePostRequest extends FormRequest
 {
@@ -22,8 +24,14 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['max:25', 'string', 'nullable'],
+            'title' => ['max:15', 'string', 'nullable'],
             'body' => ['required', 'string'],
+            'attachments' => ['array', 'max:6'],
+            'attachments.*' => [
+                File::image()
+                    ->min('1kb')
+                    ->max('25mb')
+            ],
             'user_id' => ['numeric']
         ];
     }

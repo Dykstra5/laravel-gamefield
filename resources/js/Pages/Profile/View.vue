@@ -4,7 +4,6 @@ import { usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileTabButton from '@/Pages/Profile/Partials/ProfileTabButton.vue'
 import Edit from './Edit.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, ref, watch } from 'vue';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
@@ -119,7 +118,7 @@ function uploadAvatar() {
                         <template v-else>
                             <div class="flex gap-1">
                                 <button @click="uploadCover"
-                                    class="flex items-start text-black font-black text-sm bg-white hover:bg-gray-300 transition-all shadow-md rounded p-2 opacity-0 group-hover:opacity-100">
+                                    class="flex items-start font-bold text-black text-sm bg-white hover:bg-gray-300 transition-all shadow-md rounded p-2 opacity-0 group-hover:opacity-100">
                                     <ArrowUpOnSquareIcon class="size-4 mr-1 text-black font-black" />
                                     Guardar
                                 </button>
