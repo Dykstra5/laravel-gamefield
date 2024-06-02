@@ -14,12 +14,18 @@ const props = defineProps({
     id: Number,
 })
 
+const emit = defineEmits(['attachmentClick']);
+
 function deletePost() {
     if (window.confirm('¿Quieres eliminar este post?')) {
         router.delete(route('post.destroy', props.post.post_id), {
             preserveScroll: true,
         });
     }
+}
+
+function displaySlider(attachment_index) {
+    emit('attachmentClick', props.post, attachment_index)
 }
 </script>
 
@@ -103,9 +109,10 @@ function deletePost() {
             post.attachments.length === 2 ? 'grid-cols-2' : '',
             post.attachments.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : '',
         ]">
-            <template v-for="attachment of post.attachments">
+            <template v-for="(attachment, index) of post.attachments">
                 <div
-                    class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative">
+                    class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative cursor-pointer"
+                    @click="displaySlider(index)">
                     <a :href="route('post.download', attachment.attachment_id)"
                         class="absolute right-2 top-2 bg-red-900 hover:bg-red-950 p-1 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                         <ArrowDownTrayIcon class="size-5 text-white" />
