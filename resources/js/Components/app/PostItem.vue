@@ -2,18 +2,23 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
-import { TrashIcon, HeartIcon as HeartIconSolid } from '@heroicons/vue/24/solid';
+import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid } from '@heroicons/vue/24/solid';
 import { CursorArrowRaysIcon } from '@heroicons/vue/20/solid';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
+import TextAreaInput from '@/Components/TextAreaInput.vue';
+import ReadMoreText from '@/Components/app/ReadMoreText.vue';
+import { ref } from 'vue';
+
+const comment = ref('');
 
 const props = defineProps({
     post: Object,
-    attachment: Object,
-    id: Number,
 })
+
+const authUser = usePage().props.auth.user;
 
 const emit = defineEmits(['attachmentClick']);
 
@@ -31,9 +36,18 @@ function displaySlider(attachment_index) {
 
 function sendLike() {
     axiosClient.post(route('post.like', props.post.post_id))
-        .then(({data}) => {
+        .then(({ data }) => {
             props.post.has_liked = data.has_liked;
             props.post.likes = data.likes;
+        });
+}
+
+function postComment() {
+    axiosClient.post(route('post.comment.create', props.post.post_id), { comment: comment.value })
+        .then(({ data }) => {
+            comment.value = '',
+            props.post.last_5_comments.unshift(data);
+            props.post.comments++;
         });
 }
 </script>
@@ -99,19 +113,7 @@ function sendLike() {
             </div>
         </div>
         <div class="mb-1">
-            <Disclosure v-if="post.content.length > 300" v-slot="{ open }">
-                <div v-if="!open" class="ck-content-output break-words" v-html="post.content.substring(0, 300)" />
-                <DisclosurePanel v-else>
-                    <div class="ck-content-output break-words" v-html="post.content" />
-                </DisclosurePanel>
-
-                <div class="flex justify-end">
-                    <DisclosureButton class=" font-black text-red-600 hover:underline">
-                        <small>{{ open ? 'Mostrar menos' : 'Mostrar Más' }}</small>
-                    </DisclosureButton>
-                </div>
-            </Disclosure>
-            <div v-else class="ck-content-output break-words" v-html="post.content" />
+            <ReadMoreText :content="post.content" :contentClass="'ck-content-output break-words'" />
         </div>
         <div v-if="post.attachments" class="grid gap-4" :class="[
             post.attachments.length === 1 ? 'grid-cols-1' : '',
@@ -135,23 +137,8 @@ function sendLike() {
                 </div>
             </template>
         </div>
-        <div class="flex justify-evenly">
-            <button class="my-3 flex justify-center gap-2 font-black transition-all" @click="sendLike" :class="[
-                post.has_liked ? 'text-red-800' : ''
-            ]">
-                <!-- me gusta -->
-                <HeartIconSolid v-if="post.has_liked" class="size-6" />
-                <HeartIcon v-else class="size-6" />
-                <span class="w-[30px] text-left">{{ post.likes }}</span>
-                <!-- {{ post.reactions.likes }} -->
-            </button>
-            <button class="mx-5 my-3 flex justify-center gap-2">
-                <!-- comentario -->
-                <ChatBubbleOvalLeftIcon class="size-6" />
-                <!-- {{ post.reactions.comments }} -->
-            </button>
-        </div>
-        <div class="flex justify-between border-t">
+
+        <div class="flex justify-between border-t border-gray-400 mt-3 py-2">
             <div>
                 <small class=" text-gray-600">
                     {{ post.created_at }}
@@ -171,6 +158,65 @@ function sendLike() {
                 </div>
             </div>
         </div>
+
+        <Disclosure v-slot="{ open }">
+            <div class="flex justify-evenly border-t border-gray-400">
+                <button class="mt-3 flex justify-center gap-2 font-black transition-all" @click="sendLike" :class="[
+                    post.has_liked ? 'text-red-800' : ''
+                ]">
+                    <!-- me gusta -->
+                    <HeartIconSolid v-if="post.has_liked" class="size-6" />
+                    <HeartIcon v-else class="size-6" />
+                    <span class="w-[30px] text-left">{{ post.likes }}</span>
+                    <!-- {{ post.reactions.likes }} -->
+                </button>
+                <DisclosureButton class="mt-3 flex justify-center gap-2 transition-all" :class="[
+                    open ? 'text-blue-600' : ''
+                ]">
+                    <ChatBubbleOvalLeftIconSolid v-if="open" class="size-6" />
+                    <ChatBubbleOvalLeftIcon v-else class="size-6" />
+                    <span class="w-[30px] text-left">{{ post.comments }}</span>
+                </DisclosureButton>
+            </div>
+
+            <DisclosurePanel class="text-sm text-gray-500">
+                <div class="mt-3">
+                    <div class="flex">
+                        <TextAreaInput v-model="comment" placeholder="Escribe tu comentario aquí" rows="1"
+                            class="w-full resize-none rounded-r-none max-h-[150px]"></TextAreaInput>
+                        <button @click="postComment" type="submit"
+                            class="flex items-center justify-center rounded-l-none rounded-md bg-rose-600 px-2 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                            comentar
+                        </button>
+                    </div>
+                    <div>
+                        <div v-if="post.last_5_comments.length > 0" v-for="comment of post.last_5_comments"
+                            class="border-l-2 border-gray-400 mt-3 pl-4 pt-4 pb-2">
+                            <div class="flex items-center">
+                                <a href="javascript:void(0)" class="w-[36px] h-[36px]">
+                                    <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
+                                        class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
+                                </a>
+                                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
+                                    <a href="javascript:void(0)"
+                                        class=" underline-offset-2 hover:underline transition-all ">
+                                        {{ comment.user.name }}
+                                    </a>
+                                </h4>
+                            </div>
+                            <ReadMoreText :content="comment.comment"
+                                :contentClass="'text-base mt-2 mx-4 border-l border-red-600 text-black pt-1 px-2'" />
+                            <div class="border-t mt-3 text-black">
+                                <small>{{ comment.created_at }}</small>
+                            </div>
+                        </div>
+                        <div v-else class="border-t-2 mt-3 py-2 text-center">
+                            No hay comentarios
+                        </div>
+                    </div>
+                </div>
+            </DisclosurePanel>
+        </Disclosure>
     </div>
 </template>
 

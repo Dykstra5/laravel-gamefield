@@ -18,10 +18,6 @@ class UserResource extends JsonResource
         return [
             "id" => $this->id,
             "name" => $this->name,
-            "email" => $this->email,
-            "email_verified_at" => $this->email_verified_at,
-            "created_at" => $this->created_at,
-            "updated_at" => $this->updated_at,
             "username" => $this->username,
             "cover_src" => $this->cover_path ? Storage::url($this->cover_path) : '',
             "avatar_src" => $this->avatar_path ? Storage::url($this->avatar_path) : '',

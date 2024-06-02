@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,5 +38,15 @@ class Post extends Model
     public function reactions(): HasMany
     {
         return $this->hasMany(PostReaction::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
+
+    public function latest5Comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->latest()->limit(5);
     }
 }

@@ -39,6 +39,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post/{post}/like', [PostController::class, 'postLike'])
         ->name('post.like');
+
+    Route::post('/post/{post}/comment', [PostController::class, 'storeComment'])
+        ->name('post.comment.create');
 });
 
 

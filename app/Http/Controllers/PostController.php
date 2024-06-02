@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
+use App\Http\Resources\CommentResource;
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\PostAttachment;
 use App\Models\PostReaction;
@@ -10,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
@@ -96,5 +99,28 @@ class PostController extends Controller
             'likes' => $likes,
             'has_liked' => $has_liked
         ]);
+    }
+
+    public function storeComment(Request $request, Post $post)
+    {
+        $validator = Validator::make($request->all(), [
+            'comment' => ['required'],
+        ], [
+            'comment.required' => 'El comentario no puede estar vacío',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+    
+        $data = $validator->validated();
+
+        $comment = Comment::create([
+            'post_id' => $post->id,
+            'comment' => nl2br($data['comment']),
+            'user_id' => Auth::id()
+        ]);
+
+        return response(new CommentResource($comment), 201);
     }
 }
