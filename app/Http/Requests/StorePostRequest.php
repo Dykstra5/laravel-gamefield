@@ -29,8 +29,7 @@ class StorePostRequest extends FormRequest
             'attachments' => ['array', 'max:6'],
             'attachments.*' => [
                 File::image()
-                    ->min('1kb')
-                    ->max('25mb')
+                    ->max('20mb')
             ],
             'user_id' => ['numeric']
         ];
@@ -43,5 +42,15 @@ class StorePostRequest extends FormRequest
                 'user_id' => auth()->user()->id,
             ]
         );
+    }
+
+    public function messages ()
+    {
+        return [
+            'attachments.*.image' => 'Solo se puede publicar imágenes',
+            'attachments.*.max' => 'El tamaño de la imagen no puede ser superior a 20Mb',
+            'body' => 'El contenido no puede estar vacío',
+            'title' => 'El título no puede contener más de 15 carácteres'
+        ];
     }
 }

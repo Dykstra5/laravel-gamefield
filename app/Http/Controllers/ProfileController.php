@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class ProfileController extends Controller
@@ -67,10 +68,21 @@ class ProfileController extends Controller
      */
     public function updateImages(Request $request)
     {
-        $data = $request->validate([
-            'cover' => ['nullable', 'image'],
-            'avatar' => ['nullable', 'image'],
+        $validator = Validator::make($request->all(), [
+            'cover' => ['nullable', 'image', 'max:20800'], // 2048 KB = 2 MB
+            'avatar' => ['nullable', 'image', 'max:20800'], // 2048 KB = 2 MB
+        ], [
+            'cover.image' => 'La imagen de la cabecera debe ser una imagen.',
+            'cover.max' => 'La imagen de la cabecera no puede ser mayor a 20MB.',
+            'avatar.image' => 'La imagen del avatar debe ser una imagen.',
+            'avatar.max' => 'La imagen del avatar no puede ser mayor a 20MB.',
         ]);
+    
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+    
+        $data = $validator->validated();
 
         $user = $request->user();
         

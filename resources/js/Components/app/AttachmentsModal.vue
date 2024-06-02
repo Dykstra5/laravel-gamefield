@@ -85,7 +85,7 @@ function next() {
                                     <button v-if="attachmentsLength > 1" @click="prev" class="md:mx-5 flex justify-center gap-2">
                                         <ChevronLeftIcon class="size-16" />
                                     </button>
-                                    <div class=" flex items-center justify-center w-full h-full">
+                                    <div class=" flex items-center justify-center w-full h-full bg-gray-100">
                                         <img :src="attachments[index].url" :alt="attachments[index].name"
                                         class="max-w-full max-h-full">
                                     </div>
