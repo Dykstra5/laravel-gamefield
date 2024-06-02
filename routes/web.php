@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/post/download/{attachment}', [PostController::class, 'downloadAttachment'])
         ->name('post.download');
+
+    Route::post('/post/{post}/like', [PostController::class, 'postLike'])
+        ->name('post.like');
 });
 
 

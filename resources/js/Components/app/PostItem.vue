@@ -2,11 +2,12 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
-import { TrashIcon } from '@heroicons/vue/24/solid';
+import { TrashIcon, HeartIcon as HeartIconSolid } from '@heroicons/vue/24/solid';
 import { CursorArrowRaysIcon } from '@heroicons/vue/20/solid';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 import { router } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
+import axiosClient from '@/axiosClient';
 
 const props = defineProps({
     post: Object,
@@ -26,6 +27,14 @@ function deletePost() {
 
 function displaySlider(attachment_index) {
     emit('attachmentClick', props.post, attachment_index)
+}
+
+function sendLike() {
+    axiosClient.post(route('post.like', props.post.post_id))
+        .then(({data}) => {
+            props.post.has_liked = data.has_liked;
+            props.post.likes = data.likes;
+        });
 }
 </script>
 
@@ -110,8 +119,7 @@ function displaySlider(attachment_index) {
             post.attachments.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : '',
         ]">
             <template v-for="(attachment, index) of post.attachments">
-                <div
-                    class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative cursor-pointer"
+                <div class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative cursor-pointer"
                     @click="displaySlider(index)">
                     <a :href="route('post.download', attachment.attachment_id)"
                         class="absolute right-2 top-2 bg-red-900 hover:bg-red-950 p-1 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
@@ -128,9 +136,13 @@ function displaySlider(attachment_index) {
             </template>
         </div>
         <div class="flex justify-evenly">
-            <button class="mx-5 my-3 flex justify-center gap-2">
+            <button class="my-3 flex justify-center gap-2 font-black transition-all" @click="sendLike" :class="[
+                post.has_liked ? 'text-red-800' : ''
+            ]">
                 <!-- me gusta -->
-                <HeartIcon class="size-6" />
+                <HeartIconSolid v-if="post.has_liked" class="size-6" />
+                <HeartIcon v-else class="size-6" />
+                <span class="w-[30px] text-left">{{ post.likes }}</span>
                 <!-- {{ post.reactions.likes }} -->
             </button>
             <button class="mx-5 my-3 flex justify-center gap-2">

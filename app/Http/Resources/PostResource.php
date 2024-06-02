@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\PostReaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
@@ -28,6 +29,8 @@ class PostResource extends JsonResource
             'user' => new UserResource($this->user),
             'group' => $this->group,
             'attachments' => PostAttachmentResource::collection($this->attachments),
+            'likes' => $this->reactions_count,
+            'has_liked' => $this->reactions->count() > 0,
         ];
     }
 }
