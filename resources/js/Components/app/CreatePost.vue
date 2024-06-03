@@ -34,8 +34,7 @@ function submit() {
     formPost.post(route('post.create'), {
         preserveScroll: true,
         onSuccess: function () {
-            formPost.reset();
-            attachments.value.splice(0, attachments.value.length);
+            resetFormAndImageInputs();
         },
         onError: function (errors) {
             attachmentsErrors.value.splice(0, attachmentsErrors.value.length);

@@ -45,10 +45,20 @@ function sendLike() {
 function postComment() {
     axiosClient.post(route('post.comment.create', props.post.post_id), { comment: comment.value })
         .then(({ data }) => {
-            comment.value = '',
+            comment.value = '';
             props.post.last_5_comments.unshift(data);
             props.post.comments++;
         });
+}
+
+function deleteComment(comment) {
+    if (window.confirm('¿Quieres eliminar este comentario?')) {
+        axiosClient.delete(route('post.comment.destroy', comment.id))
+            .then(({ data }) => {
+                props.post.last_5_comments = props.post.last_5_comments.filter(c => c.id !== comment.id);
+                props.post.comments--;
+            });
+    }
 }
 </script>
 
@@ -73,7 +83,7 @@ function postComment() {
             </div>
 
             <div>
-                <Menu as="div" class="relative flex items-center h-full">
+                <Menu v-if="authUser.id === post.user.id" as="div" class="relative flex items-center h-full">
                     <div class="flex items-center h-full">
                         <MenuButton>
                             <EllipsisHorizontalIcon
@@ -113,7 +123,7 @@ function postComment() {
             </div>
         </div>
         <div class="mb-1">
-            <ReadMoreText :content="post.content" :contentClass="'ck-content-output break-words'" />
+            <ReadMoreText :content="post.content" contentClass="ck-content-output break-words" />
         </div>
         <div v-if="post.attachments" class="grid gap-4" :class="[
             post.attachments.length === 1 ? 'grid-cols-1' : '',
@@ -192,20 +202,51 @@ function postComment() {
                     <div>
                         <div v-if="post.last_5_comments.length > 0" v-for="comment of post.last_5_comments"
                             class="border-l-2 border-gray-400 mt-3 pl-4 pt-4 pb-2">
-                            <div class="flex items-center">
-                                <a href="javascript:void(0)" class="w-[36px] h-[36px]">
-                                    <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
-                                        class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
-                                </a>
-                                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
-                                    <a href="javascript:void(0)"
-                                        class=" underline-offset-2 hover:underline transition-all ">
-                                        {{ comment.user.name }}
+                            <div class=" flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <a href="javascript:void(0)" class="w-[36px] h-[36px]">
+                                        <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
+                                            class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                                     </a>
-                                </h4>
+                                    <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
+                                        <a href="javascript:void(0)"
+                                            class=" underline-offset-2 hover:underline transition-all ">
+                                            {{ comment.user.name }}
+                                        </a>
+                                    </h4>
+                                </div>
+                                <Menu v-if="authUser.id === comment.user.id" as="div"
+                                    class="relative flex items-center h-full">
+                                    <div class="flex items-center h-full">
+                                        <MenuButton>
+                                            <EllipsisHorizontalIcon
+                                                class="size-8 p-1 text-black rounded hover:bg-gray-600/10 transition-all"
+                                                aria-hidden="true" />
+                                        </MenuButton>
+                                    </div>
+                                    <transition enter-active-class="transition duration-100 ease-out"
+                                        enter-from-class="transform scale-95 opacity-0"
+                                        enter-to-class="transform scale-100 opacity-100"
+                                        leave-active-class="transition duration-75 ease-in"
+                                        leave-from-class="transform scale-100 opacity-100"
+                                        leave-to-class="transform scale-95 opacity-0">
+                                        <MenuItems
+                                            class="absolute z-10 top-8 right-0 mt-2 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
+                                            <MenuItem v-slot="{ active }">
+                                            <button @click="deleteComment(comment)" :class="[
+                                                active ? 'bg-red-500 text-white' : 'text-red-500',
+                                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                                            ]">
+                                                <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true" />
+                                                Eliminar
+                                            </button>
+                                            </MenuItem>
+                                        </MenuItems>
+                                    </transition>
+                                </Menu>
                             </div>
                             <ReadMoreText :content="comment.comment"
-                                :contentClass="'text-base mt-2 mx-4 border-l border-red-600 text-black pt-1 px-2'" />
+                                contentClass="text-base mt-2 mx-4 border-l border-red-600 text-black pt-1 px-2" />
                             <div class="border-t mt-3 text-black">
                                 <small>{{ comment.created_at }}</small>
                             </div>

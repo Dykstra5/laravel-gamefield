@@ -25,7 +25,7 @@ class StorePostRequest extends FormRequest
     {
         return [
             'title' => ['max:15', 'string', 'nullable'],
-            'body' => ['required', 'string'],
+            'body' => ['required', 'string', 'max:1000'],
             'attachments' => ['array', 'max:6'],
             'attachments.*' => [
                 File::image()
@@ -49,7 +49,8 @@ class StorePostRequest extends FormRequest
         return [
             'attachments.*.image' => 'Solo se puede publicar imágenes',
             'attachments.*.max' => 'El tamaño de la imagen no puede ser superior a 20Mb',
-            'body' => 'El contenido no puede estar vacío',
+            'body.required' => 'El contenido no puede estar vacío',
+            'body.max' => 'El contenido no puede tener más de 1000 carácteres',
             'title' => 'El título no puede contener más de 15 carácteres'
         ];
     }

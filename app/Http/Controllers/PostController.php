@@ -104,9 +104,10 @@ class PostController extends Controller
     public function storeComment(Request $request, Post $post)
     {
         $validator = Validator::make($request->all(), [
-            'comment' => ['required'],
+            'comment' => ['required', 'max:1000'],
         ], [
             'comment.required' => 'El comentario no puede estar vacío',
+            'comment.max' => 'El comentario no puede tener más de 1000 carácteres',
         ]);
 
         if ($validator->fails()) {
@@ -122,5 +123,18 @@ class PostController extends Controller
         ]);
 
         return response(new CommentResource($comment), 201);
+    }
+
+    public function destroyComment(Comment $comment)
+    {
+        $id = Auth::id();
+
+        if ($comment->user_id !== $id) {
+            return response("No tienes permiso para eliminar este comentario", 403);
+        }
+
+        $comment->delete();
+
+        return response('', 204);
     }
 }
