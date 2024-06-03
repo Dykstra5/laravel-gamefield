@@ -19,14 +19,26 @@ class HomeController extends Controller
             ->withCount('reactions')
             ->withCount('comments')
             ->with([
-                'latest5Comments',
+                'latest5Comments' => function ($query) use ($userId) {
+                    $query->withCount('commentReactions') // Contar reacciones de comentarios
+                        ->with(['commentReactions' => function ($query) use ($userId) {
+                            $query->where('user_id', $userId); // Filtrar reacciones del usuario
+                        }]);
+                },
                 'reactions' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            
-            ->latest()->paginate(20);
+                    $query->where('user_id', $userId);
+                }
+            ])
+            ->latest()->paginate(5);
+
+        $posts = PostResource::collection($posts);
+
+        if ($request->wantsJson()) {
+            return $posts;
+        }
+
         return Inertia::render('Home', [
-            'posts' => PostResource::collection($posts)
+            'posts' => $posts
         ]);
     }
 }

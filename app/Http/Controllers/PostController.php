@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
+use App\Models\CommentReaction;
 use App\Models\Post;
 use App\Models\PostAttachment;
 use App\Models\PostReaction;
@@ -136,5 +137,31 @@ class PostController extends Controller
         $comment->delete();
 
         return response('', 204);
+    }
+
+    public function commentLike(Comment $comment)
+    {
+        $userId = Auth::id();
+        $commentReaction = CommentReaction::where('comment_id', $comment->id)->where('user_id', $userId)->first();
+
+        if ($commentReaction) {
+            $has_liked = false;
+            $commentReaction->delete();
+        } else {
+            $has_liked = true;
+            CommentReaction::create([
+                'comment_id' => $comment->id,
+                'type' => 'like',
+                'user_id' => Auth::id()
+            ]);
+        }
+
+        $likes = CommentReaction::where('comment_id', $comment->id)->count();
+
+        return response([
+            'comment_id' => $comment->id,
+            'commentLikes' => $likes,
+            'has_liked_comment' => $has_liked
+        ]);
     }
 }

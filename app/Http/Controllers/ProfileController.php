@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\ProfileUpdateRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,14 +17,20 @@ use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
-    public function index(User $user)
+    public function index($username)
     {
-        return Inertia::render('Profile/View', [
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-            'status' => session('status'),
-            'success' => session('success'),
-            'user' => new UserResource($user),
-        ]);
+        try {
+            $user = User::where('username', $username)->firstOrFail();
+
+            return Inertia::render('Profile/View', [
+                'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'success' => session('success'),
+                'user' => new UserResource($user),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('dashboard');
+        }
     }
 
     /**

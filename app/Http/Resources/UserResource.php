@@ -13,7 +13,7 @@ class UserResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request)
     {
         return [
             "id" => $this->id,
@@ -21,6 +21,13 @@ class UserResource extends JsonResource
             "username" => $this->username,
             "cover_src" => $this->cover_path ? Storage::url($this->cover_path) : '',
             "avatar_src" => $this->avatar_path ? Storage::url($this->avatar_path) : '',
+            "isAdmin" => $this->isAdmin(),
         ];
     }
+
+    protected function isAdmin()
+    {
+        return $this->role_id === 1;
+    }
+
 }

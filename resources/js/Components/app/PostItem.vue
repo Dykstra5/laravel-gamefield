@@ -10,7 +10,7 @@ import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
 import TextAreaInput from '@/Components/TextAreaInput.vue';
 import ReadMoreText from '@/Components/app/ReadMoreText.vue';
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 
 const comment = ref('');
 
@@ -42,6 +42,14 @@ function sendLike() {
         });
 }
 
+function sendCommentLike(comment) {
+    axiosClient.post(route('comment.like', comment.id))
+        .then(({ data }) => {
+            comment.has_liked = data.has_liked_comment;
+            comment.likes = data.commentLikes;
+        })
+}
+
 function postComment() {
     axiosClient.post(route('post.comment.create', props.post.post_id), { comment: comment.value })
         .then(({ data }) => {
@@ -63,7 +71,7 @@ function deleteComment(comment) {
 </script>
 
 <template>
-    <div class=" bg-white rounded p-4 shadow mb-3">
+    <div class=" bg-white rounded px-4 py-2 shadow mb-3">
         <div class="flex justify-between gap-2 mb-3">
             <div class="flex items-center">
                 <a href="javascript:void(0)" class="w-[48px] h-[48px]">
@@ -71,15 +79,14 @@ function deleteComment(comment) {
                         class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                 </a>
 
-                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
-                    <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
-                        {{ post.user.name }}
-                    </a>
-                    <div v-if="post.title" class="flex items-center">
-                        <ChevronDownIcon class="size-5 -rotate-90 hidden md:block" />
-                        <p class=" text-sm font-bold">{{ post.title }}</p>
-                    </div>
-                </h4>
+                <div class="flex flex-col ml-2">
+                    <h4 class="font-bold">
+                        <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
+                            {{ post.user.name }}
+                        </a>
+                    </h4>
+                    <p class=" text-sm font-bold">{{ post.title }}</p>
+                </div>
             </div>
 
             <div>
@@ -125,7 +132,7 @@ function deleteComment(comment) {
         <div class="mb-1">
             <ReadMoreText :content="post.content" contentClass="ck-content-output break-words" />
         </div>
-        <div v-if="post.attachments" class="grid gap-4" :class="[
+        <div v-if="post.attachments.length > 0" class="grid gap-4" :class="[
             post.attachments.length === 1 ? 'grid-cols-1' : '',
             post.attachments.length === 2 ? 'grid-cols-2' : '',
             post.attachments.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : '',
@@ -134,7 +141,7 @@ function deleteComment(comment) {
                 <div class="group aspect-square bg-rose-200 flex flex-col items-center justify-center text-gray-500 relative cursor-pointer"
                     @click="displaySlider(index)">
                     <a :href="route('post.download', attachment.attachment_id)"
-                        class="absolute right-2 top-2 bg-red-900 hover:bg-red-950 p-1 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                        class="absolute right-2 top-2 bg-red-950/60 hover:bg-rose-700 p-1 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                         <ArrowDownTrayIcon class="size-5 text-white" />
                     </a>
                     <img v-if="isImage(attachment)" :src="attachment.url" :alt="attachment.name"
@@ -148,7 +155,7 @@ function deleteComment(comment) {
             </template>
         </div>
 
-        <div class="flex justify-between border-t border-gray-400 mt-3 py-2">
+        <div class="flex justify-between py-1">
             <div>
                 <small class=" text-gray-600">
                     {{ post.created_at }}
@@ -170,26 +177,29 @@ function deleteComment(comment) {
         </div>
 
         <Disclosure v-slot="{ open }">
-            <div class="flex justify-evenly border-t border-gray-400">
-                <button class="mt-3 flex justify-center gap-2 font-black transition-all" @click="sendLike" :class="[
-                    post.has_liked ? 'text-red-800' : ''
-                ]">
+            <div class="flex justify-evenly border-t border-gray-400 pt-2">
+                <button class="flex justify-center items-center font-black transition-all group" @click="sendLike"
+                    :class="[
+                        post.has_liked ? 'text-red-800' : ''
+                    ]">
                     <!-- me gusta -->
-                    <HeartIconSolid v-if="post.has_liked" class="size-6" />
-                    <HeartIcon v-else class="size-6" />
-                    <span class="w-[30px] text-left">{{ post.likes }}</span>
+                    <HeartIconSolid v-if="post.has_liked"
+                        class="size-8 p-1 text-red-800 transition-all rounded-full group-hover:bg-rose-500/20" />
+                    <HeartIcon v-else class="size-8 p-1 transition-all rounded-full group-hover:bg-rose-500/20" />
+                    <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </button>
-                <DisclosureButton class="mt-3 flex justify-center gap-2 transition-all" :class="[
+                <DisclosureButton class="flex justify-center items-center transition-all group" :class="[
                     open ? 'text-blue-600' : ''
                 ]">
-                    <ChatBubbleOvalLeftIconSolid v-if="open" class="size-6" />
-                    <ChatBubbleOvalLeftIcon v-else class="size-6" />
-                    <span class="w-[30px] text-left">{{ post.comments }}</span>
+                    <ChatBubbleOvalLeftIconSolid v-if="open"
+                        class="size-8 p-1 rounded-full group-hover:bg-blue-500/20" />
+                    <ChatBubbleOvalLeftIcon v-else class="size-8 p-1 rounded-full group-hover:bg-blue-500/20" />
+                    <span class="w-[30px] text-left font-black">{{ post.comments }}</span>
                 </DisclosureButton>
             </div>
 
-            <DisclosurePanel class="text-sm text-gray-500">
+            <DisclosurePanel class="text-sm text-gray-500 border-t border-gray-400 mt-2">
                 <div class="mt-3">
                     <div class="flex">
                         <TextAreaInput v-model="comment" placeholder="Escribe tu comentario aquí" rows="1"
@@ -199,61 +209,74 @@ function deleteComment(comment) {
                             comentar
                         </button>
                     </div>
-                    <div>
-                        <div v-if="post.last_5_comments.length > 0" v-for="comment of post.last_5_comments"
-                            class="border-l-2 border-gray-400 mt-3 pl-4 pt-4 pb-2">
-                            <div class=" flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <a href="javascript:void(0)" class="w-[36px] h-[36px]">
-                                        <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
-                                            class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
+                    <div v-if="post.last_5_comments.length > 0" v-for="comment of post.last_5_comments"
+                        class=" mt-3 pl-4 pt-2 pb-2 border-l border-red-600">
+                        <div class=" flex justify-between items-center">
+                            <div class="flex items-center">
+                                <a href="javascript:void(0)" class="w-[36px] h-[36px]">
+                                    <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
+                                        class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
+                                </a>
+                                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
+                                    <a href="javascript:void(0)"
+                                        class=" underline-offset-2 hover:underline transition-all ">
+                                        {{ comment.user.name }}
                                     </a>
-                                    <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
-                                        <a href="javascript:void(0)"
-                                            class=" underline-offset-2 hover:underline transition-all ">
-                                            {{ comment.user.name }}
-                                        </a>
-                                    </h4>
-                                </div>
-                                <Menu v-if="authUser.id === comment.user.id" as="div"
-                                    class="relative flex items-center h-full">
-                                    <div class="flex items-center h-full">
-                                        <MenuButton>
-                                            <EllipsisHorizontalIcon
-                                                class="size-8 p-1 text-black rounded hover:bg-gray-600/10 transition-all"
-                                                aria-hidden="true" />
-                                        </MenuButton>
-                                    </div>
-                                    <transition enter-active-class="transition duration-100 ease-out"
-                                        enter-from-class="transform scale-95 opacity-0"
-                                        enter-to-class="transform scale-100 opacity-100"
-                                        leave-active-class="transition duration-75 ease-in"
-                                        leave-from-class="transform scale-100 opacity-100"
-                                        leave-to-class="transform scale-95 opacity-0">
-                                        <MenuItems
-                                            class="absolute z-10 top-8 right-0 mt-2 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
-                                            <MenuItem v-slot="{ active }">
-                                            <button @click="deleteComment(comment)" :class="[
-                                                active ? 'bg-red-500 text-white' : 'text-red-500',
-                                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
-                                            ]">
-                                                <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true" />
-                                                Eliminar
-                                            </button>
-                                            </MenuItem>
-                                        </MenuItems>
-                                    </transition>
-                                </Menu>
+                                </h4>
                             </div>
-                            <ReadMoreText :content="comment.comment"
-                                contentClass="text-base mt-2 mx-4 border-l border-red-600 text-black pt-1 px-2" />
-                            <div class="border-t mt-3 text-black">
+                            <Menu v-if="authUser.id === comment.user.id" as="div"
+                                class="relative flex items-center h-full">
+                                <div class="flex items-center h-full">
+                                    <MenuButton>
+                                        <EllipsisHorizontalIcon
+                                            class="size-8 p-1 text-black rounded hover:bg-gray-600/10 transition-all"
+                                            aria-hidden="true" />
+                                    </MenuButton>
+                                </div>
+                                <transition enter-active-class="transition duration-100 ease-out"
+                                    enter-from-class="transform scale-95 opacity-0"
+                                    enter-to-class="transform scale-100 opacity-100"
+                                    leave-active-class="transition duration-75 ease-in"
+                                    leave-from-class="transform scale-100 opacity-100"
+                                    leave-to-class="transform scale-95 opacity-0">
+                                    <MenuItems
+                                        class="absolute z-10 top-8 right-0 mt-2 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
+                                        <MenuItem v-slot="{ active }">
+                                        <button @click="deleteComment(comment)" :class="[
+                                            active ? 'bg-red-500 text-white' : 'text-red-500',
+                                            'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                                        ]">
+                                            <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true" />
+                                            Eliminar
+                                        </button>
+                                        </MenuItem>
+                                    </MenuItems>
+                                </transition>
+                            </Menu>
+                        </div>
+                        <div class="ml-2">
+                            <ReadMoreText :content="comment.comment" contentClass="text-base mt-2 text-black pt-1" />
+                            <div class="mt-3 text-black">
                                 <small>{{ comment.created_at }}</small>
                             </div>
                         </div>
-                        <div v-else class="border-t-2 mt-3 py-2 text-center">
-                            No hay comentarios
+                        <div class="flex justify-start items-center mt-2 border-t border-gray-400 pl-2">
+                            <button class="flex justify-center items-center font-black transition-all mt-2 group"
+                                @click="sendCommentLike(comment)" :class="[
+                                    comment.has_liked ? 'text-red-800' : ''
+                                ]">
+                                <!-- me gusta -->
+                                <HeartIconSolid v-if="comment.has_liked"
+                                    class="size-7 p-1 transition-all text-red-800 rounded-full group-hover:bg-rose-500/20" />
+                                <HeartIcon v-else
+                                    class="size-7 p-1 transition-all rounded-full group-hover:bg-rose-500/20" />
+                                <span class="w-[30px] text-left font-black">{{ comment.likes }}</span>
+                                <!-- {{ post.reactions.likes }} -->
+                            </button>
                         </div>
+                    </div>
+                    <div v-else class="mt-3 py-2 text-center">
+                        No hay comentarios
                     </div>
                 </div>
             </DisclosurePanel>

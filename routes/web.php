@@ -3,20 +3,20 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
 
-Route::get(
-    '/',
-    [HomeController::class, 'index']
-)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/',[HomeController::class, 'index'])->middleware(['auth', 'verified'])
+->name('dashboard');
 
 // Por alguna razón esta declaración de ruta da un error que hace que todas las demás rutas declaradas después fallen :)
 // Route::get('/{user:username}', [ProfileController::class, 'index']
 // )->name('profile');
-Route::get(
-    '/user/{user:username}',
-    [ProfileController::class, 'index']
-)->name('profile');
+// Route::get('/user/{user:username}', [ProfileController::class, 'index'])
+// ->name('profile');
+Route::get('/user/{username}', [ProfileController::class, 'index'])
+->name('profile');
+
 
 Route::middleware('auth')->group(function () {
     Route::post('/profile/update-images', [ProfileController::class, 'updateImages'])
@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post', [PostController::class, 'store'])
         ->name('post.create');
+        // ->middleware(CheckIsAdmin::class);
 
     Route::delete('/post/{post}', [PostController::class, 'destroy'])
         ->name('post.destroy');
@@ -45,6 +46,9 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/comment/{comment}', [PostController::class, 'destroyComment'])
         ->name('post.comment.destroy');
+
+    Route::post('/comment/{comment}/like', [PostController::class, 'commentLike'])
+        ->name('comment.like');
 });
 
 

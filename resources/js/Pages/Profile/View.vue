@@ -100,6 +100,7 @@ function uploadAvatar() {
 
 <template>
     <AuthenticatedLayout>
+        <pre>{{ authUser }}</pre>
         <div class="container mx-auto px-4 h-full overflow-auto">
             <div class="relative bg-white group">
                 <img :src="coverImageSrc || user.data.cover_src || '/img/default-cover-red.png'" alt="jajasi"
@@ -108,7 +109,7 @@ function uploadAvatar() {
                 <div v-if="isMyProfile" class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
                     <div class="mt-2">
                         <button v-if="!coverImageSrc"
-                            class="relative flex items-center text-white font-black text-sm bg-gradient-to-tr from-rose-900 to-red-500 hover:to-red-600 hover:from-red-600 transition-all shadow rounded border-2 border-red-600 p-2 opacity-0 group-hover:opacity-100">
+                            class="relative flex items-center justify-center rounded bg-rose-600 p-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 opacity-0 group-hover:opacity-100">
                             <PhotoIcon class="size-4 mr-1 text-white font-black" />
                             Cambiar Cabecera
                             <input type="file" class="absolute left-0 top-0 bottom-0 right-0 opacity-0"
