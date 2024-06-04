@@ -3,8 +3,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid } from '@heroicons/vue/24/solid';
-import { CursorArrowRaysIcon } from '@heroicons/vue/20/solid';
-import { ChevronDownIcon } from '@heroicons/vue/20/solid'
+import { CursorArrowRaysIcon, TagIcon } from '@heroicons/vue/20/solid';
 import { router, usePage } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
@@ -162,17 +161,17 @@ function deleteComment(comment) {
                     {{ post.created_at }}
                 </small>
             </div>
-            <div v-if="post.tags" class="flex flex-row justify-start items-center">
+            <div v-if="post.tags.length > 0" class="flex flex-row justify-start items-center">
                 <div class="mr-1">
                     <small>Temas:</small>
                 </div>
-                <div v-for="tag in post.tags"
-                    class="mr-1 bg-red-600 rounded-sm h-4 pr-1 pl-1 hover:bg-red-700 text-white cursor-pointer">
-                    <a href="javascript:void(0)">
-                        <small class="block text leading-4">
-                            {{ tag.name }}
-                        </small>
+                <div v-for="tag in post.tags">
+                    <a href="javascript:void(0)"
+                        class="flex items-center justify-center rounded-sm bg-rose-600 px-1 py-[1px] m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                        <TagIcon class="size-3 mr-1" />
+                        {{ tag.name }}
                     </a>
+
                 </div>
             </div>
         </div>

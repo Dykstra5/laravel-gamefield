@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import BalloonEditor from '@ckeditor/ckeditor5-build-balloon';
 import TextInput from '@/Components/TextInput.vue';
-import { ChevronDoubleUpIcon, PaperClipIcon, BookmarkIcon, XMarkIcon } from '@heroicons/vue/20/solid';
+import { ChevronDoubleUpIcon, PaperClipIcon, BookmarkIcon, XMarkIcon, TagIcon } from '@heroicons/vue/20/solid';
 import { ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
 import { isImage } from '@/functions';
@@ -13,7 +13,19 @@ const props = defineProps({
 });
 
 const attachments = ref([]);
+const tags = ref([]);
 const attachmentsErrors = ref([]);
+const searchResults = ref([]);
+const creandoPublicacion = ref(false);
+const tagsText = ref('');
+const alreadySearched = ref(null);
+const formPost = useForm({
+    id: null,
+    title: '',
+    body: '',
+    attachments: [],
+    tags: [],
+});
 
 const editor = BalloonEditor;
 const editorConfig = {
@@ -21,16 +33,10 @@ const editorConfig = {
     balloonToolbar: ['heading', '|', 'bold', 'italic', '|', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'link', '|', 'blockQuote'],
 };
 
-const creandoPublicacion = ref(false);
-const formPost = useForm({
-    id: null,
-    title: '',
-    body: '',
-    attachments: [],
-});
 
 function submit() {
     formPost.attachments = attachments.value.map(upFile => upFile.file);
+    formPost.tags = tags.value.map(tags => tags);
     formPost.post(route('post.create'), {
         preserveScroll: true,
         onSuccess: function () {
@@ -88,6 +94,10 @@ function resetForm() {
     formPost.reset();
     attachments.value.splice(0, attachments.value.length);
     attachmentsErrors.value.splice(0, attachmentsErrors.value.length);
+    tagsText.value = '';
+    searchResults.value = [];
+    alreadySearched.value = false;
+    tags.value.splice(0, tags.value.length);
 }
 
 function resetFormAndImageInputs() {
@@ -95,13 +105,44 @@ function resetFormAndImageInputs() {
     creandoPublicacion.value = false;
 }
 
+async function searchTags() {
+    if (tagsText.value.length > 2) {
+        alreadySearched.value = true;
+        try {
+            const response = await axios.get(`/search/tags/${tagsText.value}`)
+            searchResults.value = response.data;
+            console.log(searchResults.value);
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+        }
+    } else {
+        alreadySearched.value = false;
+        searchResults.value = [];
+    }
+}
+
+function addTag(item, item_type) {
+    tags.value.push({
+        'type': item_type,
+        'tag_id': item.id,
+        'name': item.name,
+    });
+    alreadySearched.value = false;
+    searchResults.value = [];
+    tagsText.value = '';
+
+}
+
+function removeTag(tag) {
+    tags.value = tags.value.filter(f => f !== tag);
+}
+
 </script>
 
 <template>
     <div class="bg-white rounded p-4 shadow mb-3 overflow-auto">
         <div v-if="creandoPublicacion && attachmentsErrors.length > 0"
-            class="p-3 bg-red-400 text-gray-200 rounded-lg mb-3"
-            >
+            class="p-3 bg-red-400 text-gray-200 rounded-lg mb-3">
             <div class="flex items-center text-lg">
                 <ExclamationTriangleIcon class="mr-2 size-8" />
                 Error
@@ -118,16 +159,86 @@ function resetFormAndImageInputs() {
                 <ChevronDoubleUpIcon class="size-6 -mr-[5px]" />
             </button>
         </div>
-        <TextInput @click="creandoPublicacion = true" placeholder="Haz Click aquí para postear" class="w-full"
+        <TextInput @click="creandoPublicacion = true"
+            :placeholder="creandoPublicacion ? '' : 'Haz Click aquí para postear'" class="w-full"
             v-model="formPost.title" />
         <div v-if="creandoPublicacion" class="my-3">
             Contenido
             <ckeditor :editor="editor" v-model="formPost.body" :config="editorConfig">
             </ckeditor>
         </div>
+
+        <!-- Busqueda de temas -->
         <div v-if="creandoPublicacion" class="mb-3">
-            Tags
+            <div>
+                <span>Temas (1 - 3) </span>
+            </div>
+            <div>
+                <div class="w-full">
+                    <TextInput @keyup="searchTags" placeholder="Buscar tema" class="w-full" v-model="tagsText" />
+                </div>
+                <div v-if="tags.length > 0" class="flex items-center">
+                    <span>Temas añadidos: </span>
+                    <div class="flex flex-wrap">
+                        <button @click="removeTag(tag)" v-for="tag of tags"
+                            class="flex items-center justify-center rounded-md bg-rose-600 p-1 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                            <XMarkIcon class="size-4 mr-1" />
+                            {{ tag.name }}
+                        </button>
+                    </div>
+                </div>
+                <div v-if="searchResults && Object.keys(searchResults).length > 0" class="mt-2">
+                    <div v-if="searchResults.games.length > 0">
+                        <h2 class="text-2xl">Juegos</h2>
+                        <div class="flex flex-row flex-wrap items-center justify-start">
+                            <button @click="addTag(game, 'game')" v-for="game of searchResults.games"
+                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <TagIcon class="size-3 mr-1" />
+                                {{ game.name }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="searchResults.genres.length > 0">
+                        <h2 class="text-2xl">Géneros</h2>
+                        <div class="flex flex-row flex-wrap items-center justify-start">
+                            <button @click="addTag(genre, 'genre')" v-for="genre of searchResults.genres"
+                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <TagIcon class="size-3 mr-1" />
+                                {{ genre.name }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="searchResults.platforms.length > 0">
+                        <h2 class="text-2xl">Plataformas</h2>
+                        <div class="flex flex-row flex-wrap items-center justify-start">
+                            <button @click="addTag(platform, 'platform')" v-for="platform of searchResults.platforms"
+                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <TagIcon class="size-3 mr-1" />
+                                {{ platform.name }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="searchResults.developers.length > 0">
+                        <h2 class="text-2xl">Desarrolladores</h2>
+                        <div class="flex flex-row flex-wrap items-center justify-start">
+                            <button @click="addTag(developer, 'developer')"
+                                v-for="developer of searchResults.developers"
+                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <TagIcon class="size-3 mr-1" />
+                                {{ developer.name }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="searchResults && Object.keys(searchResults).length == 0 && alreadySearched"
+                    class=" text-center">
+                    No hay resultados
+                </div>
+                <!-- <pre>{{ searchResults }}</pre> -->
+            </div>
         </div>
+
+
         <div v-if="creandoPublicacion && attachments" class="grid gap-4 mb-3" :class="[
             attachments.length === 1 ? 'grid-cols-1' : '',
             attachments.length === 2 ? 'grid-cols-2' : '',

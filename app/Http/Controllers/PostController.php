@@ -9,6 +9,7 @@ use App\Models\CommentReaction;
 use App\Models\Post;
 use App\Models\PostAttachment;
 use App\Models\PostReaction;
+use App\Models\PostTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,8 @@ class PostController extends Controller
         DB::beginTransaction();
         $data = $request->validated();
         $user = $request->user();
+
+        $tags = $data['tags'] ?? [];
 
         $allPaths = [];
 
@@ -41,6 +44,17 @@ class PostController extends Controller
                     'size' => $attachment->getSize(),
                     'created_by' => $user->id,
                     'created_by' => $user->id,
+                ]);
+            }
+
+            $tags = $data['tags'] ?? [];
+
+
+            foreach ($tags as $tag) {
+                PostTag::create([
+                    'post_id' => $post->id,
+                    'type' => $tag['type'],
+                    'tag_id' => $tag['tag_id'],
                 ]);
             }
 
@@ -114,7 +128,7 @@ class PostController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-    
+
         $data = $validator->validated();
 
         $comment = Comment::create([

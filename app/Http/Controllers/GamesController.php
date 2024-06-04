@@ -3,24 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateGenreRequest;
+use App\Http\Resources\GameResource;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Genre;
 use App\Models\Platform;
 use Exception;
 use GuzzleHttp\Client;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class GamesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($gameSlug)
     {
-        //
+        try {
+            $game = Game::where('slug', $gameSlug)->firstOrFail();
+
+            return Inertia::render('Game/View', [
+                'game' => new GameResource($game),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('dashboard');
+        }
     }
 
     /**

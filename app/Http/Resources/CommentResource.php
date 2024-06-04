@@ -22,7 +22,7 @@ class CommentResource extends JsonResource
             'created_at' => Carbon::parse($this->created_at)
                 ->setTimezone('Europe/Madrid')
                 ->format('d M. Y h:i a'),
-                'likes' => $this->comment_reactions_count,
+            'likes' => $this->comment_reactions_count,
             'has_liked' => $this->commentReactions->count() > 0,
         ];
     }

@@ -1,7 +1,7 @@
 <script setup>
 import PostItem from '@/Components/app/PostItem.vue';
 import AttachmentsModal from '@/Components/app/AttachmentsModal.vue';
-import { nextTick, onMounted, onUpdated, ref } from 'vue';
+import { nextTick, onMounted, onUpdated, ref, watch } from 'vue';
 import axiosClient from '@/axiosClient';
 import { usePage } from '@inertiajs/vue3';
 
@@ -11,14 +11,23 @@ const showAttachmentsModal = ref(false);
 const postAttachments = ref({});
 const loadMoreIntersect = ref(null);
 
-const props = defineProps({
-    posts: Array,
+const allPosts = ref({
+    data: [],
+    next: null
 })
 
-const allPosts = ref({
-    data: page.props.posts.data,
-    next: page.props.posts.links.next
+const props = defineProps({
+    posts: Array
 })
+
+watch(() => page.props.posts, () => {
+    if (page.props.posts) {
+        allPosts.value = {
+            data: page.props.posts.data,
+            next: page.props.posts.links?.next
+        }
+    }
+}, {deep: true, immediate: true})
 
 function openAttachmentsModal(post, attachment_index) {
     postAttachments.value = {

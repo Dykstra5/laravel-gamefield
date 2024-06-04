@@ -27,7 +27,7 @@ class HomeController extends Controller
                     $query->where('user_id', $userId);
                 }
             ])
-            ->latest()->paginate(5);
+            ->latest()->paginate(20);
 
         $posts = PostResource::collection($posts);
 

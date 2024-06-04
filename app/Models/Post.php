@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use phpDocumentor\Reflection\DocBlock\Tag;
 
 class Post extends Model
 {
@@ -48,5 +49,10 @@ class Post extends Model
     public function latest5Comments(): HasMany
     {
         return $this->hasMany(Comment::class)->latest()->limit(5);
+    }
+
+    public function tags(): HasMany
+    {
+        return $this->hasMany(PostTag::class);
     }
 }

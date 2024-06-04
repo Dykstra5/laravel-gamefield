@@ -32,7 +32,8 @@ class PostResource extends JsonResource
             'likes' => $this->reactions_count,
             'has_liked' => $this->reactions->count() > 0,
             'comments' => $this->comments_count,
-            'last_5_comments' => CommentResource::collection($this->latest5Comments)
+            'last_5_comments' => CommentResource::collection($this->latest5Comments),
+            'tags' => TagResource::collection($this->tags),
         ];
     }
 }

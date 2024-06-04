@@ -25,7 +25,6 @@ class PostAttachment extends Model
     {
         parent::boot();
 
-
         static::deleted(function(self $model){
             Storage::disk('public')->delete($model->path);
         });
