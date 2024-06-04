@@ -5,17 +5,21 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileTabButton from '@/Pages/Profile/Partials/ProfileTabButton.vue'
 import Edit from './Edit.vue';
 import { computed, ref, watch } from 'vue';
+import { CheckIcon, XMarkIcon as XIcon} from '@heroicons/vue/16/solid';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
 import { CameraIcon } from '@heroicons/vue/24/solid';
 import { useForm } from '@inertiajs/vue3'
+import axiosClient from '@/axiosClient';
 
 const showNotification = ref(false);
 const authUser = usePage().props.auth.user;
 const coverImageSrc = ref("");
 const avatarImageSrc = ref("");
+const reloadStatus = ref(null);
 
-const isMyProfile = computed(() => authUser && authUser.id == props.user.data.id);
+const isMyProfile = computed(() => authUser && authUser.id === props.user.data.id);
+const isAdmin = computed(() => authUser && authUser.role_id === 1);
 
 const props = defineProps({
     mustVerifyEmail: {
@@ -96,11 +100,28 @@ function uploadAvatar() {
         },
     });
 }
+
+function reloadGamesDB() {
+    reloadStatus.value = 'loading';
+    setTimeout(function () {
+        getExternalData();
+    },10);
+}
+
+async function getExternalData() {
+    try {
+        const response = await axios.get('/games/get-external-data');
+        reloadStatus.value = 'done';
+        console.log('Datos obtenidos:', response.data);
+    } catch (error) {
+        reloadStatus.value = 'error';
+        console.error('Error al obtener datos externos:', error);
+    }
+}
 </script>
 
 <template>
     <AuthenticatedLayout>
-        <pre>{{ authUser }}</pre>
         <div class="container mx-auto px-4 h-full overflow-auto">
             <div class="relative bg-white group">
                 <img :src="coverImageSrc || user.data.cover_src || '/img/default-cover-red.png'" alt="jajasi"
@@ -178,6 +199,9 @@ function uploadAvatar() {
                         <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Mi Perfil" />
                         </Tab>
+                        <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
+                            <ProfileTabButton :selected="selected" text="Admin" />
+                        </Tab>
                     </TabList>
 
                     <TabPanels class="mt-2">
@@ -195,6 +219,25 @@ function uploadAvatar() {
                         </TabPanel>
                         <TabPanel v-if="isMyProfile" class="rounded">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status" />
+                        </TabPanel>
+                        <TabPanel v-if="isAdmin && isMyProfile" class="rounded">
+                            <div class="w-full bg-white p-8 rounded-lg">
+                                <h2 class="text-xl font-black mb-1">Reload videogames database information</h2>
+                                <p class="text-sm">Esta función permite volver a generar los datos relacionados con los
+                                    videojuegos
+                                </p>
+                                <div class="flex mt-6">
+                                    <button v-if="isAdmin" @click="reloadGamesDB"
+                                        class="relative flex items-center justify-center rounded bg-rose-600 p-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                        Reload Data
+                                    </button>
+                                    <div class="flex justify-center items-center ml-2">
+                                        <img v-if="reloadStatus === 'loading'" class="size-6" src="/img/loading-green-loading.gif">
+                                        <CheckIcon v-if="reloadStatus === 'done'" class="size-8 text-green-600"/>
+                                        <XIcon v-if="reloadStatus === 'error'" class="size-8 text-red-600"/>
+                                    </div>
+                                </div>
+                            </div>
                         </TabPanel>
                     </TabPanels>
                 </TabGroup>

@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
-use function Pest\Laravel\post;
-
 class HomeController extends Controller
 {
     public function index(Request $request)

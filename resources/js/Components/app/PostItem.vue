@@ -16,6 +16,7 @@ const comment = ref('');
 
 const props = defineProps({
     post: Object,
+    user: Object
 })
 
 const authUser = usePage().props.auth.user;

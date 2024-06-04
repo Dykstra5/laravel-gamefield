@@ -29,13 +29,11 @@ function openAttachmentsModal(post, attachment_index) {
 }
 
 function loadMore() {
-    console.log('Entra aquí');
     if (allPosts.value.next) {
         axiosClient.get(allPosts.value.next)
             .then(({ data }) => {
                 allPosts.value.data = [...allPosts.value.data, ...data.data];
                 allPosts.value.next = data.links.next;
-                console.log(allPosts.value.next,  data.links.next);
             })
     } else {
         return false;
