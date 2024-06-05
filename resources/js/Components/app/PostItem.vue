@@ -86,14 +86,14 @@ function copyUrl() {
     <div class=" bg-white rounded px-4 py-2 shadow mb-3">
         <div class="flex justify-between gap-2 mb-3">
             <div class="flex items-center">
-                <a href="javascript:void(0)" class="w-[48px] h-[48px]">
+                <a :href="route('profile', post.user.username)" class="w-[48px] h-[48px]">
                     <img :src="post.user.avatar_src || '/img/default-avatar-red.png'"
                         class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                 </a>
 
                 <div class="flex flex-col ml-2">
                     <h4 class="font-bold">
-                        <a href="javascript:void(0)" class=" underline-offset-2 hover:underline transition-all ">
+                        <a :href="route('profile', post.user.username)" class=" underline-offset-2 hover:underline transition-all ">
                             {{ post.user.name }}
                         </a>
                     </h4>

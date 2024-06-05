@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Follower;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -22,11 +23,21 @@ class ProfileController extends Controller
         try {
             $user = User::where('username', $username)->firstOrFail();
 
+            $followsUser = false;
+
+            if (!Auth::guest()) {
+                $followsUser = Follower::where('user_id', $user->id)->where('follower_id', Auth::id())->exists();
+            }
+
+            $followers = Follower::where('user_id', $user->id)->count();
+
             return Inertia::render('Profile/View', [
                 'mustVerifyEmail' => $user instanceof MustVerifyEmail,
                 'status' => session('status'),
                 'success' => session('success'),
                 'user' => new UserResource($user),
+                'followsUser' => $followsUser,
+                'followers' => $followers,
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');

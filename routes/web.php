@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +23,17 @@ Route::get('/user/{username}', [ProfileController::class, 'index'])
 Route::get('/game/{gameSlug}', [GamesController::class, 'index'])
     ->name('game.name');
 
+Route::post('/user/{user}/follow', [UserController::class, 'followUser'])
+    ->name('user.follow');
+
+Route::post('/user/{user}/unfollow', [UserController::class, 'unfollowUser'])
+    ->name('user.unfollow');
+
+
+
 Route::middleware('auth')->group(function () {
+
+    // Profile
     Route::post('/profile/update-images', [ProfileController::class, 'updateImages'])
         ->name('profile.updateImages');
 
@@ -36,6 +47,7 @@ Route::middleware('auth')->group(function () {
         ->name('post.create');
     // ->middleware(CheckIsAdmin::class);
 
+    // Posts
     Route::delete('/post/{post}', [PostController::class, 'destroy'])
         ->name('post.destroy');
 
@@ -51,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/post/{post}/like', [PostController::class, 'postLike'])
         ->name('post.like');
 
+    // Post comments
     Route::post('/post/{post}/comment', [PostController::class, 'storeComment'])
         ->name('post.comment.create');
 

@@ -5,7 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileTabButton from '@/Pages/Profile/Partials/ProfileTabButton.vue'
 import Edit from './Edit.vue';
 import { computed, ref, watch } from 'vue';
-import { CheckIcon, XMarkIcon as XIcon} from '@heroicons/vue/16/solid';
+import { CheckIcon, XMarkIcon as XIcon } from '@heroicons/vue/16/solid';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
 import { CameraIcon } from '@heroicons/vue/24/solid';
@@ -34,6 +34,8 @@ const props = defineProps({
     user: {
         type: Object
     },
+    followsUser: Boolean,
+    followers: Number,
     errors: Object
 });
 
@@ -105,7 +107,7 @@ function reloadGamesDB() {
     reloadStatus.value = 'loading';
     setTimeout(function () {
         getExternalData();
-    },10);
+    }, 10);
 }
 
 async function getExternalData() {
@@ -118,6 +120,34 @@ async function getExternalData() {
         console.error('Error al obtener datos externos:', error);
     }
 }
+
+function followUser() {
+    const form = useForm({});
+    showNotification.value = true;
+    form.post(route('user.follow', { user: props.user.data.id }), {
+        onFinish: function () {
+            removeCover();
+            setTimeout(function () {
+                showNotification.value = false;
+            }, 3000);
+        },
+        preserveScroll: true
+    });
+}
+
+function unfollowUser() {
+    const form = useForm({});
+    showNotification.value = true;
+    form.post(route('user.unfollow', { user: props.user.data.id }), {
+        onFinish: function () {
+            removeCover();
+            setTimeout(function () {
+                showNotification.value = false;
+            }, 3000);
+        },
+        preserveScroll: true
+    });
+}
 </script>
 
 <template>
@@ -127,8 +157,8 @@ async function getExternalData() {
                 <img :src="coverImageSrc || user.data.cover_src || '/img/default-cover-red.png'" alt="jajasi"
                     class="w-full h-[300px] object-cover bg-[#922828]">
 
-                <div v-if="isMyProfile" class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
-                    <div class="mt-2">
+                <div class="absolute top-0 right-2 left-2 flex justify-between flex-wrap">
+                    <div v-if="isMyProfile" class="mt-2">
                         <button v-if="!coverImageSrc"
                             class="relative flex items-center justify-center rounded bg-rose-600 p-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 opacity-0 group-hover:opacity-100">
                             <PhotoIcon class="size-4 mr-1 text-white font-black" />
@@ -176,8 +206,21 @@ async function getExternalData() {
                                 @change="ifAvatarChange">
                         </button>
                     </div>
-                    <div class="flex items-center justify-between flex-1 p-3">
-                        <h2 class="font-black text-xl">{{ user.data.name }}</h2>
+                    <div class="flex items-center justify-between flex-1 px-3">
+                        <div>
+                            <h2 class="font-black text-xl">{{ user.data.name }}</h2>
+                            <small class="font-black text-gray-500">Seguidores: {{ followers }}</small>
+                        </div>
+                        <template v-if="!isMyProfile" >
+                            <button @click="followUser" v-if="authUser && !followsUser"
+                                class="flex items-start font-bold text-black bg-white hover:bg-gray-200 border-2 border-black transition-all shadow-md rounded px-2 py-1">
+                                Seguir
+                            </button>
+                            <button @click="unfollowUser" v-if="authUser && followsUser"
+                                class="flex items-start font-bold text-white bg-black hover:bg-gray-800 border-2 border-black transition-all shadow-md rounded px-2 py-1">
+                                Dejar de seguir
+                            </button>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -190,8 +233,8 @@ async function getExternalData() {
                         <Tab as="template" key="Juegos" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Juegos" />
                         </Tab>
-                        <Tab v-if="isMyProfile" as="template" key="Amigos" v-slot="{ selected }">
-                            <ProfileTabButton :selected="selected" text="Amigos" />
+                        <Tab as="template" key="Siguiendo" v-slot="{ selected }">
+                            <ProfileTabButton :selected="selected" text="Siguiendo" />
                         </Tab>
                         <Tab as="template" key="Multimedia" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Multimedia" />
@@ -211,8 +254,8 @@ async function getExternalData() {
                         <TabPanel class="rounded bg-white p-3">
                             Juegos
                         </TabPanel>
-                        <TabPanel v-if="isMyProfile" class="rounded bg-white p-3">
-                            Amigos
+                        <TabPanel class="rounded bg-white p-3">
+                            Siguiendo
                         </TabPanel>
                         <TabPanel class="rounded bg-white p-3">
                             Multimedia
@@ -232,9 +275,10 @@ async function getExternalData() {
                                         Reload Data
                                     </button>
                                     <div class="flex justify-center items-center ml-2">
-                                        <img v-if="reloadStatus === 'loading'" class="size-6" src="/img/loading-green-loading.gif">
-                                        <CheckIcon v-if="reloadStatus === 'done'" class="size-8 text-green-600"/>
-                                        <XIcon v-if="reloadStatus === 'error'" class="size-8 text-red-600"/>
+                                        <img v-if="reloadStatus === 'loading'" class="size-6"
+                                            src="/img/loading-green-loading.gif">
+                                        <CheckIcon v-if="reloadStatus === 'done'" class="size-8 text-green-600" />
+                                        <XIcon v-if="reloadStatus === 'error'" class="size-8 text-red-600" />
                                     </div>
                                 </div>
                             </div>
