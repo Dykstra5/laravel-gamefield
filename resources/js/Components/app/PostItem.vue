@@ -2,9 +2,9 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
-import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid } from '@heroicons/vue/24/solid';
+import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/solid';
 import { CursorArrowRaysIcon, TagIcon } from '@heroicons/vue/20/solid';
-import { router, usePage } from '@inertiajs/vue3';
+import { router, usePage, Link } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
 import TextAreaInput from '@/Components/TextAreaInput.vue';
@@ -68,9 +68,21 @@ function deleteComment(comment) {
             });
     }
 }
+
+function copyUrl() {
+    const url = route('post.view', { id: props.post.post_id });
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            console.log('URL copiada al portapapeles');
+        })
+        .catch(err => {
+            console.error('Error al copiar la URL: ', err);
+        });
+}
 </script>
 
 <template>
+    <!-- <pre class="text-white">{{ post }}</pre> -->
     <div class=" bg-white rounded px-4 py-2 shadow mb-3">
         <div class="flex justify-between gap-2 mb-3">
             <div class="flex items-center">
@@ -90,7 +102,7 @@ function deleteComment(comment) {
             </div>
 
             <div>
-                <Menu v-if="authUser.id === post.user.id" as="div" class="relative flex items-center h-full">
+                <Menu as="div" class="relative flex items-center h-full">
                     <div class="flex items-center h-full">
                         <MenuButton>
                             <EllipsisHorizontalIcon
@@ -105,8 +117,26 @@ function deleteComment(comment) {
                         leave-from-class="transform scale-100 opacity-100"
                         leave-to-class="transform scale-95 opacity-0">
                         <MenuItems
-                            class="absolute z-10 top-8 right-0 mt-2 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
+                            class="absolute z-10 top-8 right-2 mt-2 p-1 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
                             <MenuItem v-slot="{ active }">
+                            <button @click="copyUrl" :class="[
+                                active ? 'bg-rose-200' : 'text-black',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                                <DocumentDuplicateIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
+                                Copiar URL
+                            </button>
+                            </MenuItem>
+                            <MenuItem v-slot="{ active }">
+                            <Link :href="route('post.view', post.post_id)" :class="[
+                                active ? 'bg-rose-200' : 'text-black',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                            <EyeIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
+                            Abrir post
+                            </Link>
+                            </MenuItem>
+                            <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
                             <button :class="[
                                 active ? 'bg-rose-200' : 'text-black',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
@@ -115,7 +145,7 @@ function deleteComment(comment) {
                                 Fijar en perfil
                             </button>
                             </MenuItem>
-                            <MenuItem v-slot="{ active }">
+                            <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
                             <button @click="deletePost" :class="[
                                 active ? 'bg-red-500 text-white' : 'text-red-500',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
@@ -210,14 +240,14 @@ function deleteComment(comment) {
                         </button>
                     </div>
                     <div v-if="post.last_5_comments.length > 0" v-for="comment of post.last_5_comments"
-                        class=" mt-3 pl-4 pt-2 pb-2 border-l border-red-600">
+                        class=" mt-3 px-4 pt-2 border rounded border-gray-400">
                         <div class=" flex justify-between items-center">
                             <div class="flex items-center">
                                 <a href="javascript:void(0)" class="w-[36px] h-[36px]">
                                     <img :src="comment.user.avatar_src || '/img/default-avatar-red.png'"
                                         class="w-full h-full rounded-full border-2 bg-[#922828] hover:opacity-80 border-red-800 hover:border-red-600 transition-all">
                                 </a>
-                                <h4 class=" ml-2 font-bold flex md:flex-row flex-col">
+                                <h4 class=" ml-2 text-black font-bold flex md:flex-row flex-col">
                                     <a href="javascript:void(0)"
                                         class=" underline-offset-2 hover:underline transition-all ">
                                         {{ comment.user.name }}
@@ -260,8 +290,8 @@ function deleteComment(comment) {
                                 <small>{{ comment.created_at }}</small>
                             </div>
                         </div>
-                        <div class="flex justify-start items-center mt-2 border-t border-gray-400 pl-2">
-                            <button class="flex justify-center items-center font-black transition-all mt-2 group"
+                        <div class="flex justify-start items-center mt-2 border-t border-gray-400 pl-1">
+                            <button class="flex justify-center items-center font-black transition-all my-1 group"
                                 @click="sendCommentLike(comment)" :class="[
                                     comment.has_liked ? 'text-red-800' : ''
                                 ]">

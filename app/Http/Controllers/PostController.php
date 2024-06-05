@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Resources\CommentResource;
+use App\Http\Resources\PostResource;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Post;
@@ -82,6 +83,20 @@ class PostController extends Controller
         return back();
     }
 
+    public function view(Post $post)
+    {
+        $post->loadCount('reactions');
+        $post->loadCount('comments');
+        $post->load([
+            'latest5Comments' => function ($query) {
+                $query->withCount('commentReactions'); // Contar reacciones de comentarios
+            },
+        ]);
+        return inertia('Post/View', [
+            'post' => new PostResource($post),
+        ]);
+    }
+
     public function downloadAttachment(PostAttachment $attachment)
     {
         if (!Storage::disk('public')->exists($attachment->path)) {
@@ -148,6 +163,7 @@ class PostController extends Controller
             return response("No tienes permiso para eliminar este comentario", 403);
         }
 
+        CommentReaction::where('comment_id', $comment->id)->delete();
         $comment->delete();
 
         return response('', 204);

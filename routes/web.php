@@ -39,6 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/post/{post}', [PostController::class, 'destroy'])
         ->name('post.destroy');
 
+    Route::get('/post/{post}', [PostController::class, 'view'])
+        ->name('post.view');
+
     Route::get('/search/tags/{keyword}', [SearchController::class, 'searchTags'])
         ->name('search.tags');
 
