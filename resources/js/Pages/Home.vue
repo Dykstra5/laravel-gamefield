@@ -6,8 +6,9 @@ import PostList from '@/Components/app/PostList.vue';
 import CreatePost from '@/Components/app/CreatePost.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-defineProps({
+const props = defineProps({
     posts: Object,
+    usersFollowing: Object,
 });
 
 function handleImageError() {
@@ -29,12 +30,12 @@ function handleImageError() {
             </div>
 
             <div class="md:col-span-3 md:order-3 h-full overflow-hidden">
-                <FriendList />
+                <FriendList :usersFollowing="usersFollowing" />
             </div>
 
             <div class="md:col-span-6 md:order-2 h-full overflow-hidden flex flex-col">
                 <CreatePost />
-                <PostList :posts="posts.data" class="flex-1" />
+                <PostList :posts="posts" class="flex-1" />
             </div>
         </div>
     </AuthenticatedLayout>

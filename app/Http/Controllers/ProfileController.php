@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\Follower;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,7 +20,7 @@ use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
-    public function index($username)
+    public function index(Request $request, $username)
     {
         try {
             $user = User::where('username', $username)->firstOrFail();
@@ -31,6 +33,20 @@ class ProfileController extends Controller
 
             $followers = Follower::where('user_id', $user->id)->count();
 
+            $postsQuery = Post::postsForTimeline(Auth::id(), true)->where('user_id', $user->id);
+            $posts = $postsQuery->paginate(10);
+            $posts = PostResource::collection($posts);
+
+            $following = User::query()
+                ->select('users.*')
+                ->join('followers', 'user_id', 'users.id')
+                ->where('follower_id', $user->id)
+                ->get();
+
+            if ($request->wantsJson()) {
+                return $posts;
+            }
+
             return Inertia::render('Profile/View', [
                 'mustVerifyEmail' => $user instanceof MustVerifyEmail,
                 'status' => session('status'),
@@ -38,6 +54,8 @@ class ProfileController extends Controller
                 'user' => new UserResource($user),
                 'followsUser' => $followsUser,
                 'followers' => $followers,
+                'posts' => $posts,
+                'usersFollowing' => UserResource::collection($following),
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');
@@ -95,18 +113,18 @@ class ProfileController extends Controller
             'avatar.image' => 'La imagen del avatar debe ser una imagen.',
             'avatar.max' => 'La imagen del avatar no puede ser mayor a 20MB.',
         ]);
-    
+
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-    
+
         $data = $validator->validated();
 
         $user = $request->user();
-        
+
         $cover = $data['cover'] ?? null;
         $avatar = $data['avatar'] ?? null;
-        
+
         $success = '';
         if ($cover) {
             if ($user->cover_path) {

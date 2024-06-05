@@ -1,3 +1,3 @@
 <template>
-    <img src="/img/default-avatar-red.png">
+    <img src="/img/logo.png">
 </template>

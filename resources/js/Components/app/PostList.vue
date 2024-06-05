@@ -17,7 +17,8 @@ const allPosts = ref({
 })
 
 const props = defineProps({
-    posts: Array
+    posts: Object,
+    class: String,
 })
 
 watch(() => page.props.posts, () => {
@@ -39,7 +40,7 @@ function openAttachmentsModal(post, attachment_index) {
 
 function loadMore() {
     if (allPosts.value.next) {
-        axiosClient.get(allPosts.value.next)
+        axiosClient.get(allPosts.value.next, )
             .then(({ data }) => {
                 allPosts.value.data = [...allPosts.value.data, ...data.data];
                 allPosts.value.next = data.links.next;
@@ -47,7 +48,6 @@ function loadMore() {
     } else {
         return false;
     }
-
 }
 
 onMounted(() => {
@@ -61,7 +61,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="overflow-auto">
+    <div class="overflow-auto" :class="props.class">
         <PostItem v-for="post of allPosts.data" :key="post.post_id" :post="post"
             @attachmentClick="openAttachmentsModal" />
 

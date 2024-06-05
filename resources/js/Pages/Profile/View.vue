@@ -3,20 +3,25 @@ import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue';
 import { usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileTabButton from '@/Pages/Profile/Partials/ProfileTabButton.vue'
+import ProfileTabButtonMobile from '@/Pages/Profile/Partials/ProfileTabButtonMobile.vue'
 import Edit from './Edit.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { CheckIcon, XMarkIcon as XIcon } from '@heroicons/vue/16/solid';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
-import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
+import { ArrowUpOnSquareIcon, Bars3Icon } from '@heroicons/vue/24/outline';
 import { CameraIcon } from '@heroicons/vue/24/solid';
 import { useForm } from '@inertiajs/vue3'
-import axiosClient from '@/axiosClient';
+import CreatePost from '@/Components/app/CreatePost.vue';
+import PostList from '@/Components/app/PostList.vue';
+import UserItem from '@/Components/app/UserItem.vue';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 
 const showNotification = ref(false);
 const authUser = usePage().props.auth.user;
 const coverImageSrc = ref("");
 const avatarImageSrc = ref("");
 const reloadStatus = ref(null);
+let allUsersFollowing = ref(null);
 
 const isMyProfile = computed(() => authUser && authUser.id === props.user.data.id);
 const isAdmin = computed(() => authUser && authUser.role_id === 1);
@@ -36,8 +41,27 @@ const props = defineProps({
     },
     followsUser: Boolean,
     followers: Number,
+    usersFollowing: Object,
+    posts: Object,
     errors: Object
 });
+
+const isMobile = ref(window.innerWidth < 768); // Usar 768px como punto de corte para dispositivos móviles
+
+const updateIsMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+};
+
+onMounted(() => {
+    window.addEventListener('resize', updateIsMobile);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateIsMobile);
+});
+
+
+allUsersFollowing = props.usersFollowing.data;
 
 const formImages = useForm({
     cover: null,
@@ -148,6 +172,34 @@ function unfollowUser() {
         preserveScroll: true
     });
 }
+
+function follow(user) {
+    const form = useForm({});
+    showNotification.value = true;
+    form.post(route('user.follow', { user: user.id }), {
+        onFinish: function () {
+            removeCover();
+            setTimeout(function () {
+                showNotification.value = false;
+            }, 3000);
+        },
+        preserveScroll: true
+    });
+}
+
+function unfollow(user) {
+    const form = useForm({});
+    showNotification.value = true;
+    form.post(route('user.unfollow', { user: user.id }), {
+        onFinish: function () {
+            removeCover();
+            setTimeout(function () {
+                showNotification.value = false;
+            }, 3000);
+        },
+        preserveScroll: true
+    });
+}
 </script>
 
 <template>
@@ -194,7 +246,7 @@ function unfollowUser() {
                     </div>
                 </div>
 
-                <div class="flex">
+                <div class="flex flex-col md:flex-row gap-2 md:gap-0">
                     <div
                         class="flex items-center justify-center relative group/avatar ml-8 -mt-[100px] w-[160px] h-[160px]">
                         <img :src="avatarImageSrc || user.data.avatar_src || '/img/default-avatar-red.png'" alt=""
@@ -211,7 +263,7 @@ function unfollowUser() {
                             <h2 class="font-black text-xl">{{ user.data.name }}</h2>
                             <small class="font-black text-gray-500">Seguidores: {{ followers }}</small>
                         </div>
-                        <template v-if="!isMyProfile" >
+                        <template v-if="!isMyProfile">
                             <button @click="followUser" v-if="authUser && !followsUser"
                                 class="flex items-start font-bold text-black bg-white hover:bg-gray-200 border-2 border-black transition-all shadow-md rounded px-2 py-1">
                                 Seguir
@@ -226,7 +278,37 @@ function unfollowUser() {
             </div>
             <div class="border-t border-gray-300">
                 <TabGroup>
-                    <TabList class="flex pl-4 bg-white rounded-b-lg h-[50px]">
+                    <div v-if="isMobile" class="bg-white rounded-b-lg">
+                        <Disclosure v-slot="{ open }">
+                            <DisclosureButton class="flex justify-center w-full md:text-white p-2">
+                                <Bars3Icon class="size-10 text-black" />
+                            </DisclosureButton>
+    
+                            <DisclosurePanel>
+                                <TabList class="flex flex-col items-center rounded-b-lg w-full border-t border-gray-300 pb-3">
+                                    <Tab as="template" key="Posts" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Posts" />
+                                    </Tab>
+                                    <Tab as="template" key="Juegos" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Juegos" />
+                                    </Tab>
+                                    <Tab as="template" key="Siguiendo" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Siguiendo" />
+                                    </Tab>
+                                    <Tab as="template" key="Multimedia" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Multimedia" />
+                                    </Tab>
+                                    <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Mi Perfil" />
+                                    </Tab>
+                                    <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Admin" />
+                                    </Tab>
+                                </TabList>
+                            </DisclosurePanel>
+                        </Disclosure>
+                    </div>
+                    <TabList v-else class="md:flex pl-4 bg-white rounded-b-lg h-[50px]">
                         <Tab as="template" key="Posts" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Posts" />
                         </Tab>
@@ -247,23 +329,36 @@ function unfollowUser() {
                         </Tab>
                     </TabList>
 
-                    <TabPanels class="mt-2">
-                        <TabPanel class="rounded bg-white p-3">
-                            Posts
+                    <TabPanels class="mt-3 rounded-lg overflow-hidden">
+                        <TabPanel key="Posts">
+                            <CreatePost v-if="isMyProfile" />
+                            <PostList v-if="posts.data.length > 0" :posts="posts" class="flex-1" />
+                            <div v-else class="text-lg text-gray-600 text-center rounded bg-white p-3">
+                                Este usuario no tiene posts
+                            </div>
                         </TabPanel>
-                        <TabPanel class="rounded bg-white p-3">
-                            Juegos
+                        <TabPanel key="Juegos">
+                            <div>
+                                Juegos
+                            </div>
                         </TabPanel>
-                        <TabPanel class="rounded bg-white p-3">
-                            Siguiendo
+                        <TabPanel key="Siguiendo">
+                            <div v-if="allUsersFollowing.length > 0" class="grid grid-cols-12 gap-3">
+                                <UserItem v-for="user of allUsersFollowing" :user="user" :isMyProfile="isMyProfile"
+                                    @followUser="follow(user)" @unfollowUser="unfollow(user)"
+                                    class="col-span-12 md:col-span-6" />
+                            </div>
+                            <div v-else class="text-lg text-black text-center rounded bg-white p-3">
+                                Este usuario no sigue a nadie
+                            </div>
                         </TabPanel>
-                        <TabPanel class="rounded bg-white p-3">
+                        <TabPanel key="Multimedia" class="rounded bg-white p-3">
                             Multimedia
                         </TabPanel>
-                        <TabPanel v-if="isMyProfile" class="rounded">
+                        <TabPanel key="Sobre" v-if="isMyProfile" class="rounded">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status" />
                         </TabPanel>
-                        <TabPanel v-if="isAdmin && isMyProfile" class="rounded">
+                        <TabPanel key="Admin" v-if="isAdmin && isMyProfile" class="rounded">
                             <div class="w-full bg-white p-8 rounded-lg">
                                 <h2 class="text-xl font-black mb-1">Reload videogames database information</h2>
                                 <p class="text-sm">Esta función permite volver a generar los datos relacionados con los
