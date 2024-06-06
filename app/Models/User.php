@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Sluggable\HasSlug;
@@ -27,7 +28,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'cover_path',
-        'avatar_path'
+        'avatar_path',
+        'email_verified_at',
+        'role_id'
     ];
 
     /**
@@ -58,7 +61,9 @@ class User extends Authenticatable implements MustVerifyEmail
         parent::boot();
 
         static::creating(function ($user) {
-            $user->role_id = 2;
+            if (!$user->role_id) {
+                $user->role_id = 2;
+            }
         });
     }
 

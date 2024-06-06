@@ -1,6 +1,5 @@
 <script setup>
 import { Link } from '@inertiajs/vue3'
-import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 

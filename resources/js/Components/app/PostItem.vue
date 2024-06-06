@@ -2,14 +2,14 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
-import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/solid';
+import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ShieldExclamationIcon } from '@heroicons/vue/24/solid';
 import { CursorArrowRaysIcon, TagIcon } from '@heroicons/vue/20/solid';
 import { router, usePage, Link } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
 import TextAreaInput from '@/Components/TextAreaInput.vue';
 import ReadMoreText from '@/Components/app/ReadMoreText.vue';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 
 const comment = ref('');
 
@@ -20,6 +20,8 @@ const props = defineProps({
 
 const authUser = usePage().props.auth.user;
 
+const isAdmin = computed(() => authUser && authUser.role_id === 1);
+
 const emit = defineEmits(['attachmentClick']);
 
 function deletePost() {
@@ -28,6 +30,15 @@ function deletePost() {
             preserveScroll: true,
         });
     }
+}
+
+function deletePostAsAdmin() {
+    console.log('deleted by admin')
+    // if (window.confirm('¿Quieres eliminar este post?')) {
+    //     router.delete(route('post.admin.destroy', props.post.post_id), {
+    //         preserveScroll: true,
+    //     });
+    // }
 }
 
 function displaySlider(attachment_index) {
@@ -93,7 +104,8 @@ function copyUrl() {
 
                 <div class="flex flex-col ml-2">
                     <h4 class="font-bold">
-                        <a :href="route('profile', post.user.username)" class=" underline-offset-2 hover:underline transition-all ">
+                        <a :href="route('profile', post.user.username)"
+                            class=" underline-offset-2 hover:underline transition-all ">
                             {{ post.user.name }}
                         </a>
                     </h4>
@@ -101,7 +113,7 @@ function copyUrl() {
                 </div>
             </div>
 
-            <div>
+            <div v-if="authUser">
                 <Menu as="div" class="relative flex items-center h-full">
                     <div class="flex items-center h-full">
                         <MenuButton>
@@ -154,6 +166,15 @@ function copyUrl() {
                                 Eliminar
                             </button>
                             </MenuItem>
+                            <MenuItem v-slot="{ active }" v-else-if="isAdmin">
+                            <button @click="deletePostAsAdmin" :class="[
+                                active ? 'bg-red-500 text-white' : 'text-red-500',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                                <ShieldExclamationIcon class="mr-2 h-5 w-5" aria-hidden="true" />
+                                Eliminar
+                            </button>
+                            </MenuItem>
                         </MenuItems>
                     </transition>
                 </Menu>
@@ -186,30 +207,37 @@ function copyUrl() {
         </div>
 
         <div class="flex justify-between py-1">
-            <div>
-                <small class=" text-gray-600">
+            <div class="flex flex-row justify-center md:justify-start items-center md:items-start">
+                <small class="text-gray-600 text-center md:text-left">
                     {{ post.created_at }}
                 </small>
             </div>
-            <div v-if="post.tags.length > 0" class="flex flex-row justify-start items-center">
-                <div class="mr-1">
+            <div v-if="post.tags.length > 0" class="flex flex-col md:flex-row justify-start items-center">
+                <div class="mr-1 hidden md:block">
                     <small>Temas:</small>
                 </div>
                 <div v-for="tag in post.tags">
                     <a href="javascript:void(0)"
-                        class="flex items-center justify-center rounded-sm bg-rose-600 px-1 py-[1px] m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                        <TagIcon class="size-3 mr-1" />
-                        {{ tag.name }}
+                        class="flex items-center justify-center rounded-sm px-1 py-1 m-1 text-xs text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+                        :class="[
+                            tag.type === 'game' ? 'bg-rose-600 hover:bg-rose-500' : '',
+                            tag.type === 'genre' ? 'bg-red-700 hover:bg-red-600' : '',
+                            tag.type === 'platform' ? 'bg-pink-700 hover:bg-pink-600' : '',
+                            tag.type === 'developer' ? 'bg-fuchsia-700 hover:bg-fuchsia-600' : ''
+                        ]">
+                        <div class=" min-w-3 min-h-3">
+                            <TagIcon class="size-3 mr-1" />
+                        </div>
+                        <p class="leading-3">{{ tag.name }}</p>
                     </a>
-
                 </div>
             </div>
         </div>
 
         <Disclosure v-slot="{ open }">
             <div class="flex justify-evenly border-t border-gray-400 pt-2">
-                <button class="flex justify-center items-center font-black transition-all group" @click="sendLike"
-                    :class="[
+                <button v-if="authUser" class="flex justify-center items-center font-black transition-all group"
+                    @click="sendLike" :class="[
                         post.has_liked ? 'text-red-800' : ''
                     ]">
                     <!-- me gusta -->
@@ -219,6 +247,12 @@ function copyUrl() {
                     <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </button>
+                <div v-else class="flex justify-center items-center font-black transition-all">
+                    <!-- me gusta -->
+                    <HeartIcon class="size-8 p-1 transition-all rounded-full" />
+                    <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
+                    <!-- {{ post.reactions.likes }} -->
+                </div>
                 <DisclosureButton class="flex justify-center items-center transition-all group" :class="[
                     open ? 'text-blue-600' : ''
                 ]">
@@ -231,7 +265,7 @@ function copyUrl() {
 
             <DisclosurePanel class="text-sm text-gray-500 border-t border-gray-400 mt-2">
                 <div class="mt-3">
-                    <div class="flex">
+                    <div class="flex" v-if="authUser">
                         <TextAreaInput v-model="comment" placeholder="Escribe tu comentario aquí" rows="1"
                             class="w-full resize-none rounded-r-none max-h-[150px]"></TextAreaInput>
                         <button @click="postComment" type="submit"
@@ -254,7 +288,7 @@ function copyUrl() {
                                     </a>
                                 </h4>
                             </div>
-                            <Menu v-if="authUser.id === comment.user.id" as="div"
+                            <Menu v-if="authUser && authUser.id === comment.user.id" as="div"
                                 class="relative flex items-center h-full">
                                 <div class="flex items-center h-full">
                                     <MenuButton>
@@ -291,7 +325,8 @@ function copyUrl() {
                             </div>
                         </div>
                         <div class="flex justify-start items-center mt-2 border-t border-gray-400 pl-1">
-                            <button class="flex justify-center items-center font-black transition-all my-1 group"
+                            <button v-if="authUser"
+                                class="flex justify-center items-center font-black transition-all my-1 group"
                                 @click="sendCommentLike(comment)" :class="[
                                     comment.has_liked ? 'text-red-800' : ''
                                 ]">
@@ -303,6 +338,12 @@ function copyUrl() {
                                 <span class="w-[30px] text-left font-black">{{ comment.likes }}</span>
                                 <!-- {{ post.reactions.likes }} -->
                             </button>
+                            <div v-else class="flex justify-center items-center font-black transition-all my-1">
+                                <!-- me gusta -->
+                                <HeartIcon class="size-7 p-1 transition-all rounded-full" />
+                                <span class="w-[30px] text-left font-black">{{ comment.likes }}</span>
+                                <!-- {{ post.reactions.likes }} -->
+                            </div>
                         </div>
                     </div>
                     <div v-else class="mt-3 py-2 text-center">

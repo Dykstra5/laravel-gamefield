@@ -1,6 +1,6 @@
 <script setup>
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileTabButton from '@/Pages/Profile/Partials/ProfileTabButton.vue'
 import ProfileTabButtonMobile from '@/Pages/Profile/Partials/ProfileTabButtonMobile.vue'
@@ -10,21 +10,37 @@ import { CheckIcon, XMarkIcon as XIcon } from '@heroicons/vue/16/solid';
 import { XMarkIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { ArrowUpOnSquareIcon, Bars3Icon } from '@heroicons/vue/24/outline';
 import { CameraIcon } from '@heroicons/vue/24/solid';
-import { useForm } from '@inertiajs/vue3'
+import { useForm, Link } from '@inertiajs/vue3'
 import CreatePost from '@/Components/app/CreatePost.vue';
 import PostList from '@/Components/app/PostList.vue';
 import UserItem from '@/Components/app/UserItem.vue';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+import InputLabel from '@/Components/InputLabel.vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputError from '@/Components/InputError.vue';
+import SelectInput from '@/Components/SelectInput.vue';
 
 const showNotification = ref(false);
+const userCreated = ref(false);
 const authUser = usePage().props.auth.user;
 const coverImageSrc = ref("");
 const avatarImageSrc = ref("");
 const reloadStatus = ref(null);
+const searchUser = ref('');
+const searchUsersResult = ref([]);
 let allUsersFollowing = ref(null);
 
 const isMyProfile = computed(() => authUser && authUser.id === props.user.data.id);
 const isAdmin = computed(() => authUser && authUser.role_id === 1);
+userCreated.value = computed(() => props.userCreated && props.userCreated === true);
+
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    role: '',
+});
 
 const props = defineProps({
     mustVerifyEmail: {
@@ -43,6 +59,8 @@ const props = defineProps({
     followers: Number,
     usersFollowing: Object,
     posts: Object,
+    roles: Array,
+    userCreatedMessage: String,
     errors: Object
 });
 
@@ -138,10 +156,8 @@ async function getExternalData() {
     try {
         const response = await axios.get('/games/get-external-data');
         reloadStatus.value = 'done';
-        console.log('Datos obtenidos:', response.data);
     } catch (error) {
         reloadStatus.value = 'error';
-        console.error('Error al obtener datos externos:', error);
     }
 }
 
@@ -199,6 +215,40 @@ function unfollow(user) {
         },
         preserveScroll: true
     });
+}
+
+const submit = () => {
+    form.post(route('register'), {
+        onSuccess: () => {
+            userCreated.value = true;
+            form.reset();
+        },
+        onError: () => {
+            form.reset('password', 'password_confirmation');
+        }
+    });
+};
+
+async function searchUserToDelete() {
+    if (searchUser.value.length !== 0) {
+        try {
+            const response = await axios.get(`/user/${searchUser.value}/search`)
+            searchUsersResult.value = response.data;
+            console.log(searchUsersResult.value)
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+            searchUsersResult.value = [];
+        }
+    }
+}
+
+function deleteUser(user) {
+    if (window.confirm('¿Quieres eliminar este usuario definitivamente?')) {
+        router.delete(route('user.destroy', user.id), {
+            preserveScroll: true,
+        });
+        searchUserToDelete();
+    }
 }
 </script>
 
@@ -283,9 +333,10 @@ function unfollow(user) {
                             <DisclosureButton class="flex justify-center w-full md:text-white p-2">
                                 <Bars3Icon class="size-10 text-black" />
                             </DisclosureButton>
-    
+
                             <DisclosurePanel>
-                                <TabList class="flex flex-col items-center rounded-b-lg w-full border-t border-gray-300 pb-3">
+                                <TabList
+                                    class="flex flex-col items-center rounded-b-lg w-full border-t border-gray-300 pb-3">
                                     <Tab as="template" key="Posts" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Posts" />
                                     </Tab>
@@ -358,7 +409,104 @@ function unfollow(user) {
                         <TabPanel key="Sobre" v-if="isMyProfile" class="rounded">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status" />
                         </TabPanel>
-                        <TabPanel key="Admin" v-if="isAdmin && isMyProfile" class="rounded">
+                        <TabPanel key="Admin" v-if="isAdmin && isMyProfile" class="rounded pb-8">
+                            <div class="bg-white p-8 rounded-lg mb-3">
+                                <h2 class="text-xl font-black mb-1">Crear Nuevo Usuario</h2>
+                                <form @submit.prevent="submit" class="max-w-[400px]">
+                                    <div>
+                                        <InputLabel for="name" value="Name" :class="'text-gray-800'" />
+
+                                        <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name"
+                                            required autofocus autocomplete="name" />
+
+                                        <InputError class="mt-2 text-black" :message="form.errors.name" />
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <InputLabel for="email" value="Email" :class="'text-gray-800'" />
+
+                                        <TextInput id="email" type="email" class="mt-1 block w-full"
+                                            v-model="form.email" required autocomplete="username" />
+
+                                        <InputError class="mt-2 text-black" :message="form.errors.email" />
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <InputLabel for="password" value="Password" :class="'text-gray-800'" />
+
+                                        <TextInput id="password" type="password" class="mt-1 block w-full"
+                                            v-model="form.password" required autocomplete="new-password" />
+
+                                        <InputError class="mt-2 text-black" :message="form.errors.password" />
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <InputLabel for="password_confirmation" value="Confirm Password"
+                                            :class="'text-gray-800'" />
+
+                                        <TextInput id="password_confirmation" type="password" class="mt-1 block w-full"
+                                            v-model="form.password_confirmation" required autocomplete="new-password" />
+
+                                        <InputError class="mt-2 text-black"
+                                            :message="form.errors.password_confirmation" />
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <InputLabel for="role" value="User Rol" :class="'text-gray-800'" />
+
+                                        <SelectInput id="role" :options="roles" v-model="form.role" required
+                                            autocomplete="role" />
+
+                                        <InputError class="mt-2 text-black" :message="form.errors.role" />
+                                    </div>
+
+                                    <div class="flex items-center justify-start mt-4">
+                                        <button :class="{ 'opacity-25': form.processing }" :disabled="form.processing"
+                                            class="relative flex items-center justify-center rounded bg-rose-600 p-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                            Registrar usuario
+                                        </button>
+                                    </div>
+                                </form>
+                                <div v-if="userCreated && success" class=" p-3 my-3 bg-emerald-300 w-fit rounded">
+                                    {{ success }}
+                                </div>
+                            </div>
+                            <div class="bg-white p-8 rounded-lg mb-3">
+                                <h2 class="text-xl font-black mb-1">Eliminar usuario existente</h2>
+                                <p class="text-sm mb-1 text-gray-700">Pulsa enter para buscar</p>
+                                <TextInput class="mt-1 block w-full" v-model="searchUser"
+                                    @keyup.enter="searchUserToDelete" />
+                                <div v-if="searchUsersResult.usersSearch && Object.keys(searchUsersResult.usersSearch).length > 0" class="my-3 max-h-[400px] overflow-auto">
+                                    <div v-for="user of searchUsersResult.usersSearch">
+                                        <div
+                                            class="flex flex-col md:flex-row items-center justify-between flex-wrap border-[4px] bg-white hover:bg-gray-100 border-white hover:border-gray-300 rounded-lg p-2 group transition-all">
+                                            <Link :href="route('profile', user)" class="flex items-center self-start">
+                                            <a class="w-[48px] h-[48px]">
+                                                <img :src="user.avatar_src || '/img/default-avatar-red.png'"
+                                                    class="w-full h-full rounded-full border-2 bg-[#922828] border-red-800  transition-all">
+                                            </a>
+                                            <div class="flex flex-col items-start ml-2">
+                                                <h4 class="font-bold">
+                                                    <a
+                                                        class=" underline-offset-2 group-hover:underline transition-all ">
+                                                        {{ user.name }}
+                                                    </a>
+                                                </h4>
+                                                <h4 class="font-bold">
+                                                    <a class=" underline-offset-2 text-gray-500">
+                                                        {{ user.username }}
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            </Link>
+                                            <button @click="deleteUser(user)" v-if="authUser && isAdmin"
+                                                class="px-4 py-2 md:w-fit w-full mt-3 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                                Eliminar Usuario
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="w-full bg-white p-8 rounded-lg">
                                 <h2 class="text-xl font-black mb-1">Reload videogames database information</h2>
                                 <p class="text-sm">Esta función permite volver a generar los datos relacionados con los

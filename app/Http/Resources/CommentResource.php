@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class CommentResource extends JsonResource
 {
@@ -15,6 +16,9 @@ class CommentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $userId = Auth::id();
+        $hasLiked = $this->commentReactions->contains('user_id', $userId);
+
         return [
             'id' => $this->id,
             'comment' => $this->comment,
@@ -23,7 +27,7 @@ class CommentResource extends JsonResource
                 ->setTimezone('Europe/Madrid')
                 ->format('d M. Y h:i a'),
             'likes' => $this->comment_reactions_count,
-            'has_liked' => $this->commentReactions->count() > 0,
+            'has_liked' => $hasLiked
         ];
     }
 }

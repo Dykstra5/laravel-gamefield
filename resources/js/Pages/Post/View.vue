@@ -24,7 +24,7 @@ function openAttachmentsModal(post, attachment_index) {
 
 <template>
     <AuthenticatedLayout>
-        <div class="lg:grid lg:grid-cols-12 container mx-auto mt-4 overflow-auto">
+        <div class="container mx-auto mt-4 overflow-auto">
             <PostItem :post="post.data" class="lg:col-start-4 lg:col-end-10" @attachmentClick="openAttachmentsModal" />
         </div>
         <AttachmentsModal :attachments="postAttachments.post?.attachments || []"

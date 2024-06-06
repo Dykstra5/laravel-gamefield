@@ -180,8 +180,16 @@ function removeTag(tag) {
                     <span>Temas añadidos: </span>
                     <div class="flex flex-wrap">
                         <button @click="removeTag(tag)" v-for="tag of tags"
-                            class="flex items-center justify-center rounded-md bg-rose-600 p-1 pr-2 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                            <XMarkIcon class="size-4 mr-1" />
+                            class="flex items-center justify-center rounded-md p-1 pr-2 m-1 text-xs text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+                            :class="[
+                                tag.type === 'game' ? 'bg-rose-600 hover:bg-rose-500' : '',
+                                tag.type === 'genre' ? 'bg-red-700 hover:bg-red-600' : '',
+                                tag.type === 'platform' ? 'bg-pink-700 hover:bg-pink-600' : '',
+                                tag.type === 'developer' ? 'bg-fuchsia-700 hover:bg-fuchsia-600' : ''
+                            ]">
+                            <div class=" min-w-4 min-h-4">
+                                <XMarkIcon class="size-4 mr-1" />
+                            </div>
                             <p>
                                 {{ tag.name }}
                             </p>
@@ -193,9 +201,13 @@ function removeTag(tag) {
                         <h2 class="text-2xl">Juegos</h2>
                         <div class="flex flex-row flex-wrap items-center justify-start">
                             <button @click="addTag(game, 'game')" v-for="game of searchResults.games"
-                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 pr-2 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                                <TagIcon class="size-3 mr-1" />
-                                {{ game.name }}
+                                class="flex items-center justify-center rounded-md bg-gray-800 px-1 py-1 m-1 text-xs text-white shadow-sm hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <div class=" min-w-3 min-h-3">
+                                    <TagIcon class="size-3 mr-1" />
+                                </div>
+                                <p>
+                                    {{ game.name }}
+                                </p>
                             </button>
                         </div>
                     </div>
@@ -203,9 +215,13 @@ function removeTag(tag) {
                         <h2 class="text-2xl">Géneros</h2>
                         <div class="flex flex-row flex-wrap items-center justify-start">
                             <button @click="addTag(genre, 'genre')" v-for="genre of searchResults.genres"
-                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 pr-2 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                                <TagIcon class="size-3 mr-1" />
-                                {{ genre.name }}
+                                class="flex items-center justify-center rounded-md bg-gray-800 px-1 py-1 m-1 text-xs text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <div class=" min-w-3 min-h-3">
+                                    <TagIcon class="size-3 mr-1" />
+                                </div>
+                                <p>
+                                    {{ genre.name }}
+                                </p>
                             </button>
                         </div>
                     </div>
@@ -213,9 +229,13 @@ function removeTag(tag) {
                         <h2 class="text-2xl">Plataformas</h2>
                         <div class="flex flex-row flex-wrap items-center justify-start">
                             <button @click="addTag(platform, 'platform')" v-for="platform of searchResults.platforms"
-                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 pr-2 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                                <TagIcon class="size-3 mr-1" />
-                                {{ platform.name }}
+                                class="flex items-center justify-center rounded-md bg-gray-800 px-1 py-1 m-1 text-xs text-white shadow-sm hover:bg-pink-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <div class=" min-w-3 min-h-3">
+                                    <TagIcon class="size-3 mr-1" />
+                                </div>
+                                <p>
+                                    {{ platform.name }}
+                                </p>
                             </button>
                         </div>
                     </div>
@@ -224,9 +244,13 @@ function removeTag(tag) {
                         <div class="flex flex-row flex-wrap items-center justify-start">
                             <button @click="addTag(developer, 'developer')"
                                 v-for="developer of searchResults.developers"
-                                class="flex items-center justify-center rounded-md bg-rose-600 p-1 pr-2 m-1 text-xs text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
-                                <TagIcon class="size-3 mr-1" />
-                                {{ developer.name }}
+                                class="flex items-center justify-center rounded-md bg-gray-800 px-1 py-1 m-1 text-xs text-white shadow-sm hover:bg-fuchsia-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600">
+                                <div class=" min-w-3 min-h-3">
+                                    <TagIcon class="size-3 mr-1" />
+                                </div>
+                                <p>
+                                    {{ developer.name }}
+                                </p>
                             </button>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ use App\Models\PostReaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class PostResource extends JsonResource
 {
@@ -16,6 +17,9 @@ class PostResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $userId = Auth::id();
+        $hasLiked = $this->reactions->contains('user_id', $userId);
+
         return [
             'post_id' => $this->id,
             'title' => $this->title,
@@ -30,7 +34,7 @@ class PostResource extends JsonResource
             'group' => $this->group,
             'attachments' => PostAttachmentResource::collection($this->attachments),
             'likes' => $this->reactions_count,
-            'has_liked' => $this->reactions->count() > 0,
+            'has_liked' => $hasLiked,
             'comments' => $this->comments_count,
             'last_5_comments' => CommentResource::collection($this->latest5Comments),
             'tags' => TagResource::collection($this->tags),

@@ -19,7 +19,8 @@ class Post extends Model
     protected $fillable = [
         'title',
         'body',
-        'user_id'
+        'user_id',
+        'deleted_by'
     ];
 
     public function user(): BelongsTo
@@ -58,6 +59,33 @@ class Post extends Model
     }
 
     public static function postsForTimeline($userId, $getLatest = true): Builder
+    {
+        $query = Post::query() // SELECT * FROM posts
+            ->withCount('reactions') // SELECT COUNT(*) from reactions
+            ->withCount('comments') // SELECT COUNT(*) from reactions
+            ->with([
+                'user',
+                'attachments',
+                'latest5Comments' => function ($query) {
+                    $query->withCount('commentReactions'); // SELECT * FROM comments WHERE post_id IN (1, 2, 3...)
+                    // SELECT COUNT(*) from reactions
+                },
+                'latest5Comments.user',
+                'latest5Comments.commentReactions' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId); // SELECT * from reactions WHERE user_id = ?
+                },
+                'reactions' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ]);
+        if ($getLatest) {
+            $query->latest();
+        }
+
+        return $query;
+    }
+
+    public static function singlePost($userId, Post $post, $getLatest = true): Builder
     {
         $query = Post::query() // SELECT * FROM posts
             ->withCount('reactions') // SELECT COUNT(*) from reactions

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\Follower;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,8 +32,35 @@ class UserController extends Controller
             }
         }
 
-        
-        return back()->with('success', $message);
 
+        return back()->with('success', $message);
+    }
+
+    public function searchUsers($keyword)
+    {
+        if (empty($keyword)) {
+            return response()->json([]);
+        }
+
+        $users = [];
+
+        if ($keyword === '*') {
+            $users = User::where('id', '!=', Auth::id())->get();
+        } else {
+            $users = User::query()->where('name', 'like', "%$keyword%")
+                ->orWhere('username', 'like', "%$keyword%")
+                ->get();
+        }
+
+        return response()->json([
+            'usersSearch' => UserResource::collection($users),
+        ]);
+    }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+
+        return back();
     }
 }

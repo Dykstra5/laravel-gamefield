@@ -7,6 +7,7 @@ use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\Follower;
 use App\Models\Post;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,8 +28,11 @@ class ProfileController extends Controller
 
             $followsUser = false;
 
+            $roles = [];
+
             if (!Auth::guest()) {
                 $followsUser = Follower::where('user_id', $user->id)->where('follower_id', Auth::id())->exists();
+                $roles = Role::all();
             }
 
             $followers = Follower::where('user_id', $user->id)->count();
@@ -36,6 +40,8 @@ class ProfileController extends Controller
             $postsQuery = Post::postsForTimeline(Auth::id(), true)->where('user_id', $user->id);
             $posts = $postsQuery->paginate(10);
             $posts = PostResource::collection($posts);
+
+            $roles = Role::all();
 
             $following = User::query()
                 ->select('users.*')
@@ -56,6 +62,7 @@ class ProfileController extends Controller
                 'followers' => $followers,
                 'posts' => $posts,
                 'usersFollowing' => UserResource::collection($following),
+                'roles' => $roles
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');
