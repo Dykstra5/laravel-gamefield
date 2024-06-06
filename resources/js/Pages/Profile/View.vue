@@ -13,6 +13,7 @@ import { CameraIcon } from '@heroicons/vue/24/solid';
 import { useForm, Link } from '@inertiajs/vue3'
 import CreatePost from '@/Components/app/CreatePost.vue';
 import PostList from '@/Components/app/PostList.vue';
+import DeletedPostList from '@/Components/app/DeletedPostList.vue';
 import UserItem from '@/Components/app/UserItem.vue';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import InputLabel from '@/Components/InputLabel.vue';
@@ -61,6 +62,7 @@ const props = defineProps({
     posts: Object,
     roles: Array,
     userCreatedMessage: String,
+    deletedPosts: Object,
     errors: Object
 });
 
@@ -340,9 +342,6 @@ function deleteUser(user) {
                                     <Tab as="template" key="Posts" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Posts" />
                                     </Tab>
-                                    <Tab as="template" key="Juegos" v-slot="{ selected }">
-                                        <ProfileTabButtonMobile :selected="selected" text="Juegos" />
-                                    </Tab>
                                     <Tab as="template" key="Siguiendo" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Siguiendo" />
                                     </Tab>
@@ -351,6 +350,9 @@ function deleteUser(user) {
                                     </Tab>
                                     <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Mi Perfil" />
+                                    </Tab>
+                                    <Tab as="template" key="Deleted" v-slot="{ selected }">
+                                        <ProfileTabButtonMobile :selected="selected" text="Eliminados" />
                                     </Tab>
                                     <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Admin" />
@@ -363,9 +365,6 @@ function deleteUser(user) {
                         <Tab as="template" key="Posts" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Posts" />
                         </Tab>
-                        <Tab as="template" key="Juegos" v-slot="{ selected }">
-                            <ProfileTabButton :selected="selected" text="Juegos" />
-                        </Tab>
                         <Tab as="template" key="Siguiendo" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Siguiendo" />
                         </Tab>
@@ -375,6 +374,9 @@ function deleteUser(user) {
                         <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Mi Perfil" />
                         </Tab>
+                        <Tab as="template" key="deleted" v-slot="{ selected }">
+                            <ProfileTabButton :selected="selected" text="Eliminados" />
+                        </Tab>
                         <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Admin" />
                         </Tab>
@@ -382,15 +384,12 @@ function deleteUser(user) {
 
                     <TabPanels class="mt-3 rounded-lg overflow-hidden">
                         <TabPanel key="Posts">
-                            <CreatePost v-if="isMyProfile" />
+                            <div>
+                                <CreatePost v-if="isMyProfile" />
+                            </div>
                             <PostList v-if="posts.data.length > 0" :posts="posts" class="flex-1" />
                             <div v-else class="text-lg text-gray-600 text-center rounded bg-white p-3">
                                 Este usuario no tiene posts
-                            </div>
-                        </TabPanel>
-                        <TabPanel key="Juegos">
-                            <div>
-                                Juegos
                             </div>
                         </TabPanel>
                         <TabPanel key="Siguiendo">
@@ -408,6 +407,13 @@ function deleteUser(user) {
                         </TabPanel>
                         <TabPanel key="Sobre" v-if="isMyProfile" class="rounded">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status" />
+                        </TabPanel>
+                        <TabPanel key="Juegos" v-if="isAdmin && isMyProfile">
+                            <DeletedPostList v-if="deletedPosts.data.length > 0" :deleted-posts="deletedPosts.data"
+                                class="flex-1" />
+                            <div v-else class="text-lg text-gray-600 text-center rounded bg-white p-3">
+                                No hay posts eliminados
+                            </div>
                         </TabPanel>
                         <TabPanel key="Admin" v-if="isAdmin && isMyProfile" class="rounded pb-8">
                             <div class="bg-white p-8 rounded-lg mb-3">
@@ -476,7 +482,8 @@ function deleteUser(user) {
                                 <p class="text-sm mb-1 text-gray-700">Pulsa enter para buscar</p>
                                 <TextInput class="mt-1 block w-full" v-model="searchUser"
                                     @keyup.enter="searchUserToDelete" />
-                                <div v-if="searchUsersResult.usersSearch && Object.keys(searchUsersResult.usersSearch).length > 0" class="my-3 max-h-[400px] overflow-auto">
+                                <div v-if="searchUsersResult.usersSearch && Object.keys(searchUsersResult.usersSearch).length > 0"
+                                    class="my-3 max-h-[400px] overflow-auto">
                                     <div v-for="user of searchUsersResult.usersSearch">
                                         <div
                                             class="flex flex-col md:flex-row items-center justify-between flex-wrap border-[4px] bg-white hover:bg-gray-100 border-white hover:border-gray-300 rounded-lg p-2 group transition-all">

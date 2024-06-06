@@ -43,6 +43,14 @@ class ProfileController extends Controller
 
             $roles = Role::all();
 
+            $postsQueryDeleted = Post::postsForTimeline(Auth::id(), true)
+                ->withTrashed() // Incluir posts que han sido eliminados suavemente    
+                ->whereNotNull('deleted_by')
+                ->whereNotNull('deleted_at');
+
+            $deletedPosts = $postsQueryDeleted->get();
+            $deletedPosts = PostResource::collection($deletedPosts);
+
             $following = User::query()
                 ->select('users.*')
                 ->join('followers', 'user_id', 'users.id')
@@ -62,7 +70,8 @@ class ProfileController extends Controller
                 'followers' => $followers,
                 'posts' => $posts,
                 'usersFollowing' => UserResource::collection($following),
-                'roles' => $roles
+                'roles' => $roles,
+                'deletedPosts' => $deletedPosts
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');

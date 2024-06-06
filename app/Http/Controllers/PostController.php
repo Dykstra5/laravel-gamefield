@@ -11,6 +11,7 @@ use App\Models\Post;
 use App\Models\PostAttachment;
 use App\Models\PostReaction;
 use App\Models\PostTag;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +81,30 @@ class PostController extends Controller
 
         $post->delete();
 
+        return redirect()->route('dashboard'); // Redirige a la página de inicio si el post ya no existe
+    }
+
+    public function destroyAsAdmin(Post $post)
+    {
+        $post->deleted_by = Auth::id();
+        $post->save();
+        $post->delete();
+
         return back();
+    }
+
+    public function restoreAsAdmin($postId)
+    {
+        $post = Post::withTrashed()->findOrFail($postId);
+        if ($post->trashed()) {
+            $post->restore();
+            $post->deleted_by = null;
+            $post->save();
+
+            return response()->json(['message' => 'El post ha sido restaurado correctamente'], 200);
+        } else {
+            return response()->json(['error' => 'El post no está eliminado'], 404);
+        }
     }
 
     public function view(Post $post)

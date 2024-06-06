@@ -62,6 +62,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/post/{post}', [PostController::class, 'destroy'])
         ->name('post.destroy');
 
+    Route::delete('/post/delete/{post}', [PostController::class, 'destroyAsAdmin'])
+        ->name('post.admin.destroy')
+        ->middleware(CheckIsAdmin::class);
+
+    Route::patch('/post/restore/{postId}', [PostController::class, 'restoreAsAdmin'])
+        ->name('post.admin.restore')
+        ->middleware(CheckIsAdmin::class);
+
     Route::get('/search/tags/{keyword}', [SearchController::class, 'searchTags'])
         ->name('search.tags');
 

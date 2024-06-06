@@ -2,20 +2,24 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
-import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ShieldExclamationIcon } from '@heroicons/vue/24/solid';
-import { CursorArrowRaysIcon, TagIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ShieldExclamationIcon, ShieldCheckIcon } from '@heroicons/vue/24/solid';
+import { TagIcon } from '@heroicons/vue/20/solid';
 import { router, usePage, Link } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';
 import TextAreaInput from '@/Components/TextAreaInput.vue';
 import ReadMoreText from '@/Components/app/ReadMoreText.vue';
-import { ref, reactive, computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const comment = ref('');
 
 const props = defineProps({
     post: Object,
-    user: Object
+    user: Object,
+    restore: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const authUser = usePage().props.auth.user;
@@ -33,12 +37,15 @@ function deletePost() {
 }
 
 function deletePostAsAdmin() {
-    console.log('deleted by admin')
-    // if (window.confirm('¿Quieres eliminar este post?')) {
-    //     router.delete(route('post.admin.destroy', props.post.post_id), {
-    //         preserveScroll: true,
-    //     });
-    // }
+    if (window.confirm('¿Quieres eliminar este post?')) {
+        router.delete(route('post.admin.destroy', props.post.post_id), {
+            preserveScroll: true,
+        });
+    }
+}
+
+function restorePostAsAdmin() {
+    axiosClient.patch(route('post.admin.restore', { postId: props.post.post_id }));
 }
 
 function displaySlider(attachment_index) {
@@ -93,7 +100,6 @@ function copyUrl() {
 </script>
 
 <template>
-    <!-- <pre class="text-white">{{ post }}</pre> -->
     <div class=" bg-white rounded px-4 py-2 shadow mb-3">
         <div class="flex justify-between gap-2 mb-3">
             <div class="flex items-center">
@@ -131,7 +137,7 @@ function copyUrl() {
                         <MenuItems
                             class="absolute z-10 top-8 right-2 mt-2 p-1 w-36 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
                             <MenuItem v-slot="{ active }">
-                            <button @click="copyUrl" :class="[
+                            <button @click="copyUrl" :disabled="restore" :class="[
                                 active ? 'bg-rose-200' : 'text-black',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
                             ]">
@@ -140,15 +146,21 @@ function copyUrl() {
                             </button>
                             </MenuItem>
                             <MenuItem v-slot="{ active }">
-                            <Link :href="route('post.view', post.post_id)" :class="[
+                            <Link v-if="!restore" :href="route('post.view', post.post_id)" :class="[
                                 active ? 'bg-rose-200' : 'text-black',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
                             ]">
                             <EyeIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
                             Abrir post
                             </Link>
+                            <span v-else :href="route('post.view', post.post_id)" :class="[
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all cursor-default',
+                            ]">
+                                <EyeIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
+                                Abrir post
+                            </span>
                             </MenuItem>
-                            <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
+                            <!-- <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
                             <button :class="[
                                 active ? 'bg-rose-200' : 'text-black',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
@@ -156,7 +168,7 @@ function copyUrl() {
                                 <CursorArrowRaysIcon class="mr-2 h-5 w-5 text-black" aria-hidden="true" />
                                 Fijar en perfil
                             </button>
-                            </MenuItem>
+                            </MenuItem> -->
                             <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
                             <button @click="deletePost" :class="[
                                 active ? 'bg-red-500 text-white' : 'text-red-500',
@@ -166,13 +178,22 @@ function copyUrl() {
                                 Eliminar
                             </button>
                             </MenuItem>
-                            <MenuItem v-slot="{ active }" v-else-if="isAdmin">
+                            <MenuItem v-slot="{ active }" v-else-if="isAdmin && !restore">
                             <button @click="deletePostAsAdmin" :class="[
                                 active ? 'bg-red-500 text-white' : 'text-red-500',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
                             ]">
                                 <ShieldExclamationIcon class="mr-2 h-5 w-5" aria-hidden="true" />
                                 Eliminar
+                            </button>
+                            </MenuItem>
+                            <MenuItem v-slot="{ active }" v-else-if="isAdmin && restore">
+                            <button @click="restorePostAsAdmin(post.post_id)" :class="[
+                                active ? (restore) ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white' : (restore) ? 'bg-white text-emerald-500' : 'bg-white text-red-500',
+                                'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
+                            ]">
+                                <ShieldCheckIcon class="mr-2 h-5 w-5" aria-hidden="true" />
+                                Restaurar
                             </button>
                             </MenuItem>
                         </MenuItems>
@@ -236,14 +257,18 @@ function copyUrl() {
 
         <Disclosure v-slot="{ open }">
             <div class="flex justify-evenly border-t border-gray-400 pt-2">
-                <button v-if="authUser" class="flex justify-center items-center font-black transition-all group"
+                <button :disabled="restore" v-if="authUser" class="flex justify-center items-center font-black transition-all group"
                     @click="sendLike" :class="[
                         post.has_liked ? 'text-red-800' : ''
                     ]">
                     <!-- me gusta -->
                     <HeartIconSolid v-if="post.has_liked"
-                        class="size-8 p-1 text-red-800 transition-all rounded-full group-hover:bg-rose-500/20" />
-                    <HeartIcon v-else class="size-8 p-1 transition-all rounded-full group-hover:bg-rose-500/20" />
+                        class="size-8 p-1 text-red-800 transition-all rounded-full" :class="[
+                            restore ?? 'group-hover:bg-rose-500/20'
+                        ]" />
+                    <HeartIcon v-else class="size-8 p-1 transition-all rounded-full" :class="[
+                            restore ?? 'group-hover:bg-rose-500/20'
+                        ]" />
                     <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </button>
@@ -253,12 +278,16 @@ function copyUrl() {
                     <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </div>
-                <DisclosureButton class="flex justify-center items-center transition-all group" :class="[
+                <DisclosureButton class="flex justify-center items-center transition-all group" :disabled="restore" :class="[
                     open ? 'text-blue-600' : ''
                 ]">
                     <ChatBubbleOvalLeftIconSolid v-if="open"
-                        class="size-8 p-1 rounded-full group-hover:bg-blue-500/20" />
-                    <ChatBubbleOvalLeftIcon v-else class="size-8 p-1 rounded-full group-hover:bg-blue-500/20" />
+                        class="size-8 p-1 rounded-full" :class="[
+                            restore ?? 'group-hover:bg-blue-500/20'
+                        ]" />
+                    <ChatBubbleOvalLeftIcon v-else class="size-8 p-1 rounded-full" :class="[
+                        restore ?? 'group-hover:bg-blue-500/20'
+                    ]" />
                     <span class="w-[30px] text-left font-black">{{ post.comments }}</span>
                 </DisclosureButton>
             </div>
