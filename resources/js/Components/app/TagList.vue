@@ -1,7 +1,11 @@
 <script setup>
-import GroupListItems from '@/Components/app/GroupListItems.vue';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+import TagListItems from './TagListItems.vue';
+
+defineProps({
+    tagsFollowing: Object,
+});
 
 </script>
 
@@ -17,14 +21,14 @@ import { ChevronDownIcon } from '@heroicons/vue/20/solid';
                 </DisclosureButton>
 
                 <DisclosurePanel>
-                    <GroupListItems />
+                    <TagListItems :tagsFollowing="tagsFollowing" />
                 </DisclosurePanel>
             </Disclosure>
         </div>
 
         <div class="h-full overflow-hidden hidden md:block text-center">
             <h2 class="text-xl font-bold"> Mis temas favoritos </h2>
-            <GroupListItems />
+            <TagListItems :tagsFollowing="tagsFollowing" />
         </div>
     </div>
 </template>

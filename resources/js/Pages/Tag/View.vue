@@ -1,12 +1,12 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import GroupList from '@/Components/app/GroupList.vue';
 import FriendList from '@/Components/app/FriendList.vue';
 import CreatePost from '@/Components/app/CreatePost.vue';
 import PostList from '@/Components/app/PostList.vue';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
+import TagList from '@/Components/app/TagList.vue';
 
 const authUser = usePage().props.auth.user;
 const showNotification = ref(false);
@@ -17,6 +17,7 @@ const props = defineProps({
     tagElement: Object,
     type: String,
     followsTag: Boolean,
+    tagsFollowing: Object,
     success: String
 });
 
@@ -57,7 +58,7 @@ function unfollowTag() {
                 <div class="bg-white rounded-b-lg">
                     <div class="relative">
                         <img :src="tagElement.image_background || '/img/default-cover-red.png'" alt="jajasi"
-                            class="w-full h-[300px] object-cover bg-[#922828]">
+                            class="w-full h-[500px] object-cover bg-[#922828]">
                         <div v-show="showNotification && success"
                             class="absolute top-2 right-2 flex items-center font-medium text-sm text-white bg-emerald-500 rounded p-3 w-fit">
                             <CheckCircleIcon class="size-8 mr-1 text-white font-black" />
@@ -82,7 +83,7 @@ function unfollowTag() {
         </div>
         <div class="grid md:grid-cols-12 gap-3 p-4 container mx-auto h-full">
             <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
-                <GroupList />
+                <TagList :tagsFollowing="tagsFollowing" />
             </div>
 
             <div class="md:col-span-3 md:order-3 h-full overflow-hidden">

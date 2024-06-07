@@ -10,6 +10,7 @@ import axiosClient from '@/axiosClient';
 import TextAreaInput from '@/Components/TextAreaInput.vue';
 import ReadMoreText from '@/Components/app/ReadMoreText.vue';
 import { ref, computed } from 'vue';
+import TagItem from './TagItem.vue';
 
 const comment = ref('');
 
@@ -35,12 +36,10 @@ const emit = defineEmits(['attachmentClick']);
 function deletePost() {
     if (window.confirm('¿Quieres eliminar este post?')) {
         if (!props.single) {
-            console.log('delete')
             router.delete(route('post.destroy', props.post.post_id), {
                 preserveScroll: true,
             });
         } else {
-            console.log('single delete')
             router.delete(route('post.single.destroy', props.post.post_id), {
                 preserveScroll: true,
             });
@@ -51,12 +50,10 @@ function deletePost() {
 function deletePostAsAdmin() {
     if (window.confirm('¿Quieres eliminar este post?')) {
         if (!props.single) {
-            console.log('delete as admin')
             router.delete(route('post.admin.destroy', props.post.post_id), {
                 preserveScroll: true,
             });
         } else {
-            console.log('single delete as admin')
             router.delete(route('post.single.admin.destroy', props.post.post_id), {
                 preserveScroll: true,
             });
@@ -66,7 +63,6 @@ function deletePostAsAdmin() {
 
 function restorePostAsAdmin() {
     if (window.confirm('¿Quieres restaurar este post?')) {
-        console.log('restore as admin')
         router.patch(route('post.admin.restore', { postId: props.post.post_id }), {
             preserveScroll: true,
         });
@@ -263,19 +259,7 @@ function copyUrl() {
                     <small>Temas:</small>
                 </div>
                 <div v-for="tag in post.tags">
-                    <a :href="route('tag', { type: tag.type, slug: tag.slug })"
-                        class="flex items-center justify-center rounded-sm px-1 py-1 m-1 text-xs text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
-                        :class="[
-                            tag.type === 'game' ? 'bg-rose-600 hover:bg-rose-500' : '',
-                            tag.type === 'genre' ? 'bg-red-700 hover:bg-red-600' : '',
-                            tag.type === 'platform' ? 'bg-pink-700 hover:bg-pink-600' : '',
-                            tag.type === 'developer' ? 'bg-fuchsia-700 hover:bg-fuchsia-600' : ''
-                        ]">
-                        <div class=" min-w-3 min-h-3">
-                            <TagIcon class="size-3 mr-1" />
-                        </div>
-                        <p class="leading-3">{{ tag.name }}</p>
-                    </a>
+                    <TagItem :tag="tag" />
                 </div>
             </div>
         </div>

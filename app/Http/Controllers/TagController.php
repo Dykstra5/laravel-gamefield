@@ -49,6 +49,10 @@ class TagController extends Controller
             $posts = $postsQuery->paginate(10);
             $posts = PostResource::collection($posts);
 
+            if ($request->wantsJson()) {
+                return $posts;
+            }
+
             $following = User::query()
                 ->select('users.*')
                 ->join('followers', 'user_id', 'users.id')
@@ -60,14 +64,35 @@ class TagController extends Controller
                 ->where('tag_id', $tagElement->id)
                 ->exists();
 
+            $tags = FavouriteTag::where('user_id', Auth::id())->get();
+
+            $modelMap = [
+                'game' => Game::class,
+                'genre' => Genre::class,
+                'developer' => Developer::class,
+                'platform' => Platform::class,
+            ];
+
+            $tagsFollowing = [];
+
+            foreach ($tags as $tag) {
+                $modelClass = $modelMap[$tag->type];
+                $tagObject = $modelClass::findOrFail($tag->tag_id);
+
+                $tagObject->type = $tag->type;
+                $tagObject->tag_id = $tag->tag_id;
+
+                $tagsFollowing[] = $tagObject;
+            }
+
             return Inertia::render('Tag/View', [
                 'posts' => $posts,
                 'success' => session('success'),
                 'usersFollowing' => UserResource::collection($following),
                 'tagElement' => $tagElement,
                 'type' => $type,
-                'followsTag' => $followsTag
-
+                'followsTag' => $followsTag,
+                'tagsFollowing' => TagResource::collection($tagsFollowing),
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');

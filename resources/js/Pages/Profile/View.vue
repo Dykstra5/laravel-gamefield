@@ -232,7 +232,6 @@ async function searchUserToDelete() {
         try {
             const response = await axios.get(`/user/${searchUser.value}/search`)
             searchUsersResult.value = response.data;
-            console.log(searchUsersResult.value)
         } catch (error) {
             console.error('Error fetching search results:', error);
             searchUsersResult.value = [];

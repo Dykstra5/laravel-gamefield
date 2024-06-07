@@ -3,8 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
+use App\Http\Resources\TagResource;
 use App\Http\Resources\UserResource;
+use App\Models\Developer;
+use App\Models\FavouriteTag;
+use App\Models\Game;
+use App\Models\Genre;
+use App\Models\Platform;
 use App\Models\Post;
+use App\Models\PostTag;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,15 +31,36 @@ class HomeController extends Controller
         }
 
         $following = User::query()
-                ->select('users.*')
-                ->join('followers', 'user_id', 'users.id')
-                ->where('follower_id', Auth::id())
-                ->get();
+            ->select('users.*')
+            ->join('followers', 'user_id', 'users.id')
+            ->where('follower_id', Auth::id())
+            ->get();
 
+        $tags = FavouriteTag::where('user_id', Auth::id())->get();
+
+        $modelMap = [
+            'game' => Game::class,
+            'genre' => Genre::class,
+            'developer' => Developer::class,
+            'platform' => Platform::class,
+        ];
+
+        $tagsFollowing = [];
+
+        foreach ($tags as $tag) {
+            $modelClass = $modelMap[$tag->type];
+            $tagObject = $modelClass::findOrFail($tag->tag_id);
+
+            $tagObject->type = $tag->type;
+            $tagObject->tag_id = $tag->tag_id;
+
+            $tagsFollowing[] = $tagObject;
+        }
 
         return Inertia::render('Home', [
             'posts' => $posts,
             'usersFollowing' => UserResource::collection($following),
+            'tagsFollowing' => TagResource::collection($tagsFollowing),
         ]);
     }
 }

@@ -1,14 +1,15 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import GroupList from '@/Components/app/GroupList.vue'
 import FriendList from '@/Components/app/FriendList.vue';
 import PostList from '@/Components/app/PostList.vue';
 import CreatePost from '@/Components/app/CreatePost.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import TagList from '@/Components/app/TagList.vue';
 
 const props = defineProps({
     posts: Object,
     usersFollowing: Object,
+    tagsFollowing: Object,
 });
 
 function handleImageError() {
@@ -26,7 +27,7 @@ function handleImageError() {
     <AuthenticatedLayout>
         <div class="grid md:grid-cols-12 gap-3 p-4 container mx-auto h-full">
             <div class="md:col-span-3 md:order-1 h-full overflow-hidden">
-                <GroupList />
+                <TagList :tagsFollowing="tagsFollowing" />
             </div>
 
             <div class="md:col-span-3 md:order-3 h-full overflow-hidden">

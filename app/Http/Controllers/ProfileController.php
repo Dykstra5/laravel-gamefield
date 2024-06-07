@@ -37,9 +37,13 @@ class ProfileController extends Controller
 
             $followers = Follower::where('user_id', $user->id)->count();
 
-            $postsQuery = Post::postsForTimeline(Auth::id(), true)->where('user_id', $user->id);
+            $postsQuery = Post::postsForTimeline(Auth::id(), true);
             $posts = $postsQuery->paginate(10);
             $posts = PostResource::collection($posts);
+
+            if ($request->wantsJson()) {
+                return $posts;
+            }
 
             $roles = Role::all();
 
@@ -56,13 +60,6 @@ class ProfileController extends Controller
                 ->join('followers', 'user_id', 'users.id')
                 ->where('follower_id', $user->id)
                 ->get();
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'posts' => $posts,
-                    'deletedPosts' => $deletedPosts,
-                ]);
-            }
 
             return Inertia::render('Profile/View', [
                 'mustVerifyEmail' => $user instanceof MustVerifyEmail,
