@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
+use App\Http\Resources\TagResource;
+use App\Http\Resources\UserResource;
 use App\Models\Developer;
+use App\Models\FavouriteTag;
 use App\Models\Game;
 use App\Models\Genre;
 use App\Models\Platform;
 use App\Models\Post;
 use App\Models\PostTag;
+use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,10 +36,11 @@ class TagController extends Controller
 
             $modelClass = $modelMap[$type];
 
-            $tag = $modelClass::where('slug', $slug)->firstOrFail();
+            $tagElement = $modelClass::where('slug', $slug)->firstOrFail();
+
 
             $postTagIds = PostTag::where('type', $type)
-                ->where('tag_id', $tag->id)
+                ->where('tag_id', $tagElement->id)
                 ->pluck('post_id');
 
             $postsQuery = Post::postsForTimeline(Auth::id(), true)
@@ -44,11 +49,52 @@ class TagController extends Controller
             $posts = $postsQuery->paginate(10);
             $posts = PostResource::collection($posts);
 
+            $following = User::query()
+                ->select('users.*')
+                ->join('followers', 'user_id', 'users.id')
+                ->where('follower_id', Auth::id())
+                ->get();
+
+            $followsTag = FavouriteTag::where('user_id', Auth::id())
+                ->where('type', $type)
+                ->where('tag_id', $tagElement->id)
+                ->exists();
+
             return Inertia::render('Tag/View', [
                 'posts' => $posts,
+                'success' => session('success'),
+                'usersFollowing' => UserResource::collection($following),
+                'tagElement' => $tagElement,
+                'type' => $type,
+                'followsTag' => $followsTag
+
             ]);
         } catch (ModelNotFoundException $e) {
             return redirect()->route('dashboard');
         }
+    }
+
+    public function followTag($id, $type)
+    {
+        FavouriteTag::create([
+            'user_id' => Auth::id(),
+            'type' => $type,
+            'tag_id' => $id
+        ]);
+
+        return back()->with('success', 'Ha sido añadido a favoritos');
+    }
+
+    public function unfollowTag($id, $type)
+    {
+        $message = 'No tienes añadido este tema a favoritos';
+        if (!Auth::guest()) {
+            if (FavouriteTag::where('user_id', Auth::id())->where('type', $type)->where('tag_id', $id)) {
+                $message = 'Ha sido eliminado de favoritos';
+                FavouriteTag::query()->where('user_id', Auth::id())->where('type', $type)->where('tag_id', $id)->delete();
+            }
+        }
+
+        return back()->with('success', $message);
     }
 }

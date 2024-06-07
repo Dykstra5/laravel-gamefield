@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/user/{user}/follow', [UserController::class, 'followUser'])
         ->name('user.follow');
 
-    Route::post('/user/{user}/unfollow', [UserController::class, 'unfollowUser'])
+    Route::delete('/user/{user}/unfollow', [UserController::class, 'unfollowUser'])
         ->name('user.unfollow');
 
     Route::get('/user/{keyword}/search', [UserController::class, 'searchUsers'])
@@ -104,6 +104,12 @@ Route::middleware('auth')->group(function () {
     // tags
     Route::get('/tag/{type}/{slug}', [TagController::class, 'index'])
         ->name('tag');
+
+    Route::post('/tag/{tagId}/{type}/follow', [TagController::class, 'followTag'])
+        ->name('tag.follow');
+
+    Route::delete('/tag/{tagId}/{type}/unfollow', [TagController::class, 'unfollowTag'])
+        ->name('tag.unfollow');
 });
 
 Route::get('/games/get-external-data', [GamesController::class, 'getExternalData'])

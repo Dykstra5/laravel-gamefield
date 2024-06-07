@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import BalloonEditor from '@ckeditor/ckeditor5-build-balloon';
 import TextInput from '@/Components/TextInput.vue';
@@ -10,6 +10,14 @@ import { isImage } from '@/functions';
 
 const props = defineProps({
     errors: Object,
+    defaultElement: {
+        type: Object,
+        default: null
+    },
+    type: {
+        type: String,
+        default: null
+    },
 });
 
 const attachments = ref([]);
@@ -98,6 +106,9 @@ function resetForm() {
     searchResults.value = [];
     alreadySearched.value = false;
     tags.value.splice(0, tags.value.length);
+    if (props.defaultElement && props.type) {
+        addTag(props.defaultElement, props.type);
+    }
 }
 
 function resetFormAndImageInputs() {
@@ -129,14 +140,20 @@ function addTag(item, item_type) {
     alreadySearched.value = false;
     searchResults.value = [];
     tagsText.value = '';
-
 }
 
 function removeTag(tag) {
     tags.value = tags.value.filter(f => f !== tag);
 }
 
+onMounted(() => {
+    if (props.defaultElement && props.type) {
+        addTag(props.defaultElement, props.type);
+    }
+});
 </script>
+
+
 
 <template>
     <div class="bg-white rounded p-4 shadow mb-3 overflow-auto">

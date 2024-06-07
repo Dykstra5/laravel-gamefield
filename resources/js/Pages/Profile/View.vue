@@ -168,7 +168,6 @@ function followUser() {
     showNotification.value = true;
     form.post(route('user.follow', { user: props.user.data.id }), {
         onFinish: function () {
-            removeCover();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
@@ -180,9 +179,8 @@ function followUser() {
 function unfollowUser() {
     const form = useForm({});
     showNotification.value = true;
-    form.post(route('user.unfollow', { user: props.user.data.id }), {
+    form.delete(route('user.unfollow', { user: props.user.data.id }), {
         onFinish: function () {
-            removeCover();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
@@ -196,7 +194,6 @@ function follow(user) {
     showNotification.value = true;
     form.post(route('user.follow', { user: user.id }), {
         onFinish: function () {
-            removeCover();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
@@ -210,7 +207,6 @@ function unfollow(user) {
     showNotification.value = true;
     form.post(route('user.unfollow', { user: user.id }), {
         onFinish: function () {
-            removeCover();
             setTimeout(function () {
                 showNotification.value = false;
             }, 3000);
