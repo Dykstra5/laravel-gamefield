@@ -338,7 +338,7 @@ function deleteUser(user) {
 
                             <DisclosurePanel>
                                 <TabList
-                                    class="flex flex-col items-center rounded-b-lg w-full border-t border-gray-300 pb-3">
+                                    class="flex flex-col items-start rounded-b-lg w-full border-t border-gray-300 pb-3">
                                     <Tab as="template" key="Posts" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Posts" />
                                     </Tab>
@@ -351,7 +351,7 @@ function deleteUser(user) {
                                     <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Mi Perfil" />
                                     </Tab>
-                                    <Tab as="template" key="Deleted" v-slot="{ selected }">
+                                    <Tab v-if="isAdmin && isMyProfile" as="template" key="Deleted" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Eliminados" />
                                     </Tab>
                                     <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
@@ -374,7 +374,7 @@ function deleteUser(user) {
                         <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Mi Perfil" />
                         </Tab>
-                        <Tab as="template" key="deleted" v-slot="{ selected }">
+                        <Tab v-if="isAdmin && isMyProfile" as="template" key="deleted" v-slot="{ selected }">
                             <ProfileTabButton :selected="selected" text="Eliminados" />
                         </Tab>
                         <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">

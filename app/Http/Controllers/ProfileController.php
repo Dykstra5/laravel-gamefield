@@ -58,7 +58,10 @@ class ProfileController extends Controller
                 ->get();
 
             if ($request->wantsJson()) {
-                return $posts;
+                return response()->json([
+                    'posts' => $posts,
+                    'deletedPosts' => $deletedPosts,
+                ]);
             }
 
             return Inertia::render('Profile/View', [

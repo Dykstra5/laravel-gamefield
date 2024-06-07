@@ -18,30 +18,26 @@ class TagResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $name = 'hola';
         switch ($this->type) {
             case 'game':
-                $game = Game::find($this->tag_id);
-                $name = $game->name;
+                $object = Game::find($this->tag_id);
                 break;
             case 'genre':
-                $genre = Genre::find($this->tag_id);
-                $name = $genre->name;
+                $object = Genre::find($this->tag_id);
                 break;
             case 'platform':
-                $platform = Platform::find($this->tag_id);
-                $name = $platform->name;
+                $object = Platform::find($this->tag_id);
                 break;
             case 'developer':
-                $developer = Developer::find($this->tag_id);
-                $name = $developer->name;
+                $object = Developer::find($this->tag_id);
                 break;
         }
 
         return [
             'type' => $this->type,
             'tag_id' => $this->tag_id,
-            'name' => $name
+            'slug' => $object->slug,
+            'name' => $object->name
         ];;
     }
 }

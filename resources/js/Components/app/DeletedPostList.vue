@@ -62,6 +62,9 @@ onMounted(() => {
 
 <template>
     <div class="overflow-auto" :class="props.class">
+        <!-- <pre>{{ deletedPosts }}</pre>
+        <pre>--------------------------------------------------------------------</pre>
+        <pre>{{ allPosts.data }}</pre> -->
         <PostItem v-for="post of allPosts.data" :key="post.post_id" :post="post"
             @attachmentClick="openAttachmentsModal" :restore="true"/>
 

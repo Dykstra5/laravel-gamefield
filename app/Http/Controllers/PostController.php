@@ -81,7 +81,20 @@ class PostController extends Controller
 
         $post->delete();
 
-        return redirect()->route('dashboard'); // Redirige a la página de inicio si el post ya no existe
+        return back();
+    }
+
+    public function singlePostDestroy(Post $post)
+    {
+        $id = Auth::id();
+
+        if ($post->user_id !== $id) {
+            return response("No tienes permiso para eliminar este post", 403);
+        }
+
+        $post->delete();
+
+        return redirect()->route('dashboard');
     }
 
     public function destroyAsAdmin(Post $post)
@@ -93,6 +106,15 @@ class PostController extends Controller
         return back();
     }
 
+    public function singlePostDestroyAsAdmin(Post $post)
+    {
+        $post->deleted_by = Auth::id();
+        $post->save();
+        $post->delete();
+
+        return redirect()->route('dashboard');
+    }
+
     public function restoreAsAdmin($postId)
     {
         $post = Post::withTrashed()->findOrFail($postId);
@@ -101,9 +123,9 @@ class PostController extends Controller
             $post->deleted_by = null;
             $post->save();
 
-            return response()->json(['message' => 'El post ha sido restaurado correctamente'], 200);
+            return back()->with('message', 'El post ha sido eliminado correctamente');
         } else {
-            return response()->json(['error' => 'El post no está eliminado'], 404);
+            return back()->with('message', 'El post no está eliminado');
         }
     }
 

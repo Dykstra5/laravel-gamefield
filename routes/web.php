@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -62,8 +63,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/post/{post}', [PostController::class, 'destroy'])
         ->name('post.destroy');
 
+    Route::delete('/post/single/{post}', [PostController::class, 'singlePostDestroy'])
+        ->name('post.single.destroy');
+
     Route::delete('/post/delete/{post}', [PostController::class, 'destroyAsAdmin'])
         ->name('post.admin.destroy')
+        ->middleware(CheckIsAdmin::class);
+
+    Route::delete('/post/single/delete/{post}', [PostController::class, 'singlePostDestroyAsAdmin'])
+        ->name('post.single.admin.destroy')
         ->middleware(CheckIsAdmin::class);
 
     Route::patch('/post/restore/{postId}', [PostController::class, 'restoreAsAdmin'])
@@ -92,6 +100,10 @@ Route::middleware('auth')->group(function () {
     // games
     Route::get('/game/{gameSlug}', [GamesController::class, 'index'])
         ->name('game.name');
+
+    // tags
+    Route::get('/tag/{type}/{slug}', [TagController::class, 'index'])
+        ->name('tag');
 });
 
 Route::get('/games/get-external-data', [GamesController::class, 'getExternalData'])

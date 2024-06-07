@@ -8,9 +8,9 @@ defineProps({
 
 <template>
     <button :class="[
-        'px-3 pt-2 pb-1 max-w-32 mt-1 outline-none border-l-4 w-[120px] text-left',
+        'px-2 pt-2 pb-1 max-w-32 mt-1 border-l-8 w-[120px] text-left rounded-r-lg',
         selected
-            ? 'border-rose-500 pl-5'
+            ? 'pl-5 bg-gradient-to-tr from-rose-900 to-red-500 text-white border-red-600 transition-all'
             : 'border-transparent',
     ]">
         {{ text }}   

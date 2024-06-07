@@ -19,6 +19,10 @@ const props = defineProps({
     restore: {
         type: Boolean,
         default: false
+    },
+    single: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -30,22 +34,43 @@ const emit = defineEmits(['attachmentClick']);
 
 function deletePost() {
     if (window.confirm('¿Quieres eliminar este post?')) {
-        router.delete(route('post.destroy', props.post.post_id), {
-            preserveScroll: true,
-        });
+        if (!props.single) {
+            console.log('delete')
+            router.delete(route('post.destroy', props.post.post_id), {
+                preserveScroll: true,
+            });
+        } else {
+            console.log('single delete')
+            router.delete(route('post.single.destroy', props.post.post_id), {
+                preserveScroll: true,
+            });
+        }
     }
 }
 
 function deletePostAsAdmin() {
     if (window.confirm('¿Quieres eliminar este post?')) {
-        router.delete(route('post.admin.destroy', props.post.post_id), {
-            preserveScroll: true,
-        });
+        if (!props.single) {
+            console.log('delete as admin')
+            router.delete(route('post.admin.destroy', props.post.post_id), {
+                preserveScroll: true,
+            });
+        } else {
+            console.log('single delete as admin')
+            router.delete(route('post.single.admin.destroy', props.post.post_id), {
+                preserveScroll: true,
+            });
+        }
     }
 }
 
 function restorePostAsAdmin() {
-    axiosClient.patch(route('post.admin.restore', { postId: props.post.post_id }));
+    if (window.confirm('¿Quieres restaurar este post?')) {
+        console.log('restore as admin')
+        router.patch(route('post.admin.restore', { postId: props.post.post_id }), {
+            preserveScroll: true,
+        });
+    }
 }
 
 function displaySlider(attachment_index) {
@@ -101,7 +126,7 @@ function copyUrl() {
 
 <template>
     <div class=" bg-white rounded px-4 py-2 shadow mb-3">
-        <div class="flex justify-between gap-2 mb-3">
+        <div class="flex justify-between gap-0 sm:gap-2 mb-3">
             <div class="flex items-center">
                 <a :href="route('profile', post.user.username)" class="w-[48px] h-[48px]">
                     <img :src="post.user.avatar_src || '/img/default-avatar-red.png'"
@@ -115,7 +140,7 @@ function copyUrl() {
                             {{ post.user.name }}
                         </a>
                     </h4>
-                    <p class=" text-sm font-bold">{{ post.title }}</p>
+                    <p class=" sm:text-sm font-bold text-xs ">{{ post.title }}</p>
                 </div>
             </div>
 
@@ -169,7 +194,7 @@ function copyUrl() {
                                 Fijar en perfil
                             </button>
                             </MenuItem> -->
-                            <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id">
+                            <MenuItem v-slot="{ active }" v-if="authUser.id === post.user.id && !restore">
                             <button @click="deletePost" :class="[
                                 active ? 'bg-red-500 text-white' : 'text-red-500',
                                 'group flex w-full items-center rounded-md px-2 py-2 text-sm font-black transition-all',
@@ -238,7 +263,7 @@ function copyUrl() {
                     <small>Temas:</small>
                 </div>
                 <div v-for="tag in post.tags">
-                    <a href="javascript:void(0)"
+                    <a :href="route('tag', { type: tag.type, slug: tag.slug })"
                         class="flex items-center justify-center rounded-sm px-1 py-1 m-1 text-xs text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
                         :class="[
                             tag.type === 'game' ? 'bg-rose-600 hover:bg-rose-500' : '',
@@ -257,18 +282,18 @@ function copyUrl() {
 
         <Disclosure v-slot="{ open }">
             <div class="flex justify-evenly border-t border-gray-400 pt-2">
-                <button :disabled="restore" v-if="authUser" class="flex justify-center items-center font-black transition-all group"
-                    @click="sendLike" :class="[
+                <button :disabled="restore" v-if="authUser"
+                    class="flex justify-center items-center font-black transition-all group" @click="sendLike" :class="[
                         post.has_liked ? 'text-red-800' : ''
                     ]">
                     <!-- me gusta -->
-                    <HeartIconSolid v-if="post.has_liked"
-                        class="size-8 p-1 text-red-800 transition-all rounded-full" :class="[
+                    <HeartIconSolid v-if="post.has_liked" class="size-8 p-1 text-red-800 transition-all rounded-full"
+                        :class="[
                             restore ?? 'group-hover:bg-rose-500/20'
                         ]" />
                     <HeartIcon v-else class="size-8 p-1 transition-all rounded-full" :class="[
-                            restore ?? 'group-hover:bg-rose-500/20'
-                        ]" />
+                        restore ?? 'group-hover:bg-rose-500/20'
+                    ]" />
                     <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </button>
@@ -278,13 +303,13 @@ function copyUrl() {
                     <span class="w-[30px] text-left font-black">{{ post.likes }}</span>
                     <!-- {{ post.reactions.likes }} -->
                 </div>
-                <DisclosureButton class="flex justify-center items-center transition-all group" :disabled="restore" :class="[
-                    open ? 'text-blue-600' : ''
-                ]">
-                    <ChatBubbleOvalLeftIconSolid v-if="open"
-                        class="size-8 p-1 rounded-full" :class="[
-                            restore ?? 'group-hover:bg-blue-500/20'
-                        ]" />
+                <DisclosureButton class="flex justify-center items-center transition-all group" :disabled="restore"
+                    :class="[
+                        open ? 'text-blue-600' : ''
+                    ]">
+                    <ChatBubbleOvalLeftIconSolid v-if="open" class="size-8 p-1 rounded-full" :class="[
+                        restore ?? 'group-hover:bg-blue-500/20'
+                    ]" />
                     <ChatBubbleOvalLeftIcon v-else class="size-8 p-1 rounded-full" :class="[
                         restore ?? 'group-hover:bg-blue-500/20'
                     ]" />

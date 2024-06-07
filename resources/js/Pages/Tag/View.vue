@@ -6,7 +6,7 @@ import AttachmentsModal from '@/Components/app/AttachmentsModal.vue';
 
 
 defineProps({
-    post: Object,
+    posts: Object,
 });
 
 const showAttachmentsModal = ref(false);
@@ -24,10 +24,6 @@ function openAttachmentsModal(post, attachment_index) {
 
 <template>
     <AuthenticatedLayout>
-        <div class="container mx-auto mt-4 overflow-auto">
-            <PostItem :post="post.data" class="lg:col-start-4 lg:col-end-10" @attachmentClick="openAttachmentsModal" :single="true" />
-        </div>
-        <AttachmentsModal :attachments="postAttachments.post?.attachments || []"
-                v-model:attachment_index="postAttachments.attachment_index" v-model="showAttachmentsModal" />
+        <pre>{{ posts }}</pre>
     </AuthenticatedLayout>
 </template>
