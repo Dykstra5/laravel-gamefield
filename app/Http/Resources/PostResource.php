@@ -31,7 +31,6 @@ class PostResource extends JsonResource
                 ->setTimezone('Europe/Madrid')
                 ->format('d M. Y h:i a'),
             'user' => new UserResource($this->user),
-            'group' => $this->group,
             'attachments' => PostAttachmentResource::collection($this->attachments),
             'likes' => $this->reactions_count,
             'has_liked' => $hasLiked,

@@ -258,8 +258,10 @@ function copyUrl() {
                 <div class="mr-1 hidden md:block">
                     <small>Temas:</small>
                 </div>
-                <div v-for="tag in post.tags">
-                    <TagItem :tag="tag" />
+                <div class="md:flex gap-2">
+                    <div v-for="tag in post.tags">
+                        <TagItem :tag="tag" />
+                    </div>
                 </div>
             </div>
         </div>

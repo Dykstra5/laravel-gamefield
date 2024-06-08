@@ -3,15 +3,22 @@ import { ref, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import TextInput from '@/Components/TextInput.vue';
 
 const showingNavigationDropdown = ref(false);
+const keyword = ref('');
 
 const authUser = usePage().props.auth.user;
 
 const isAdmin = computed(() => authUser && authUser.role_id === 1);
+
+function search() {
+    if (keyword.value != '') {
+        router.get(route('search', keyword.value));
+    }
+}
 
 </script>
 
@@ -23,7 +30,7 @@ const isAdmin = computed(() => authUser && authUser.role_id === 1);
             isAdmin ? 'dark:bg-emerald-500' : 'dark:bg-rose-950'
         ]">
             <!-- Primary Navigation Menu -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <!-- Logo -->
@@ -33,6 +40,10 @@ const isAdmin = computed(() => authUser && authUser.role_id === 1);
                                 class="block size-12 w-auto fill-current text-gray-800 dark:text-gray-200" />
                             </Link>
                         </div>
+                    </div>
+
+                    <div class="flex items-center w-full ml-6 sm:ml-16">
+                        <TextInput @keyup.enter="search" placeholder="Buscar..." class="w-full" v-model="keyword" />
                     </div>
 
                     <div class="hidden sm:flex sm:items-center sm:ms-6">

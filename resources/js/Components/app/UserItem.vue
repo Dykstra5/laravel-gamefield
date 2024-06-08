@@ -25,24 +25,20 @@ function unfollow() {
 </script>
 
 <template>
-    <div class="flex items-center justify-between border-[4px] bg-white hover:bg-gray-100 border-white hover:border-gray-300 rounded-lg p-2 group transition-all">
-        <Link :href="route('profile', user.username)" class="flex items-center">
-            <a class="w-[48px] h-[48px]">
+    <div
+        class="flex items-center justify-between border-[4px] bg-gray-100 hover:bg-gray-100 border-white hover:border-gray-300 rounded-lg p-2 group transition-all">
+        <Link :href="route('profile', user.username)" class="w-full">
+        <div class="flex flex-row items-center justify-start md:justify-around lg:justify-start">
+            <div class="w-[38px] h-[38px] lg:w-[48px] lg:h-[48px]">
                 <img :src="user.avatar_src || '/img/default-avatar-red.png'"
                     class="w-full h-full rounded-full border-2 bg-[#922828] border-red-800  transition-all">
-            </a>
-            <div class="flex flex-col items-center ml-2">
-                <h4 class="font-bold">
-                    <a class=" underline-offset-2 group-hover:underline transition-all ">
-                        {{ user.name }}
-                    </a>
-                </h4>
-                <h4 class="font-bold">
-                    <a class=" underline-offset-2 text-gray-500">
-                        {{ user.username }}
-                    </a>
-                </h4>
             </div>
+            <div class="ml-2 md:ml-0 lg:ml-2">
+                <span class="font-bold">
+                    {{ user.name }}
+                </span>
+            </div>
+        </div>
         </Link>
         <template v-if="isMyProfile">
             <button @click.prevent.stop="follow" v-if="authUser && !followsUser"

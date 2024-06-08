@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Resources\PostAttachmentResource;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\Follower;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -37,7 +39,7 @@ class ProfileController extends Controller
 
             $followers = Follower::where('user_id', $user->id)->count();
 
-            $postsQuery = Post::postsForTimeline(Auth::id(), true);
+            $postsQuery = Post::postsForTimeline(Auth::id(), true)->where('user_id', $user->id);
             $posts = $postsQuery->paginate(10);
             $posts = PostResource::collection($posts);
 
@@ -61,6 +63,13 @@ class ProfileController extends Controller
                 ->where('follower_id', $user->id)
                 ->get();
 
+                $allAttachments = DB::table('posts')
+                ->join('post_attachments', 'posts.id', '=', 'post_attachments.post_id')
+                ->where('posts.user_id', $user->id)
+                ->whereNull('posts.deleted_at') // Filtra los posts eliminados suavemente
+                ->select('post_attachments.*')
+                ->get();
+
             return Inertia::render('Profile/View', [
                 'mustVerifyEmail' => $user instanceof MustVerifyEmail,
                 'status' => session('status'),
@@ -71,6 +80,7 @@ class ProfileController extends Controller
                 'posts' => $posts,
                 'usersFollowing' => UserResource::collection($following),
                 'roles' => $roles,
+                'allAttachments' => PostAttachmentResource::collection($allAttachments),
                 'deletedPosts' => $deletedPosts
             ]);
         } catch (ModelNotFoundException $e) {

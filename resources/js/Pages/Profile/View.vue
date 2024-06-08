@@ -20,6 +20,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import SelectInput from '@/Components/SelectInput.vue';
+import AttachmentsModal from '@/Components/app/AttachmentsModal.vue';
 
 const showNotification = ref(false);
 const userCreated = ref(false);
@@ -30,6 +31,8 @@ const reloadStatus = ref(null);
 const searchUser = ref('');
 const searchUsersResult = ref([]);
 let allUsersFollowing = ref(null);
+const attachmentIndex = ref(null);
+const showAttachmentsModal = ref(false);
 
 const isMyProfile = computed(() => authUser && authUser.id === props.user.data.id);
 const isAdmin = computed(() => authUser && authUser.role_id === 1);
@@ -63,6 +66,7 @@ const props = defineProps({
     roles: Array,
     userCreatedMessage: String,
     deletedPosts: Object,
+    allAttachments: Object,
     errors: Object
 });
 
@@ -247,6 +251,11 @@ function deleteUser(user) {
         searchUserToDelete();
     }
 }
+
+function displaySlider(index) {
+    attachmentIndex.value = index;
+    showAttachmentsModal.value = true;
+}
 </script>
 
 <template>
@@ -346,7 +355,8 @@ function deleteUser(user) {
                                     <Tab v-if="isMyProfile" as="template" key="Sobre" v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Mi Perfil" />
                                     </Tab>
-                                    <Tab v-if="isAdmin && isMyProfile" as="template" key="Deleted" v-slot="{ selected }">
+                                    <Tab v-if="isAdmin && isMyProfile" as="template" key="Deleted"
+                                        v-slot="{ selected }">
                                         <ProfileTabButtonMobile :selected="selected" text="Eliminados" />
                                     </Tab>
                                     <Tab v-if="isAdmin && isMyProfile" as="template" key="Admin" v-slot="{ selected }">
@@ -397,8 +407,16 @@ function deleteUser(user) {
                                 Este usuario no sigue a nadie
                             </div>
                         </TabPanel>
-                        <TabPanel key="Multimedia" class="rounded bg-white p-3">
-                            Multimedia
+                        <TabPanel key="Multimedia">
+                            <div v-if="allAttachments.data.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-1 rounded bg-white p-3">
+                                <div v-for="(attachment, index) of allAttachments.data" class="bg-gray-200 cursor-pointer"  @click="displaySlider(index)">
+                                    <img :src="attachment.url" :alt="attachment.name"
+                                        class=" object-contain aspect-square">
+                                </div>
+                            </div>
+                            <div v-else class="text-lg text-black text-center rounded bg-white p-3">
+                                Este usuario no tiene imágenes
+                            </div>
                         </TabPanel>
                         <TabPanel key="Sobre" v-if="isMyProfile" class="rounded">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status" />
@@ -532,5 +550,7 @@ function deleteUser(user) {
                 </TabGroup>
             </div>
         </div>
+        <AttachmentsModal :attachments="allAttachments.data || []"
+            v-model:attachment_index="attachmentIndex" v-model="showAttachmentsModal" />
     </AuthenticatedLayout>
 </template>

@@ -97,10 +97,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/comment/{comment}/like', [PostController::class, 'commentLike'])
         ->name('comment.like');
 
-    // games
-    Route::get('/game/{gameSlug}', [GamesController::class, 'index'])
-        ->name('game.name');
-
     // tags
     Route::get('/tag/{type}/{slug}', [TagController::class, 'index'])
         ->name('tag');
@@ -110,6 +106,9 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/tag/{tagId}/{type}/unfollow', [TagController::class, 'unfollowTag'])
         ->name('tag.unfollow');
+    // Search
+    Route::get('/search/{keyword}', [SearchController::class, 'searchGlobal'])
+        ->name('search');
 });
 
 Route::get('/games/get-external-data', [GamesController::class, 'getExternalData'])

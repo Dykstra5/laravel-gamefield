@@ -19,22 +19,6 @@ use Inertia\Inertia;
 class GamesController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index($gameSlug)
-    {
-        try {
-            $game = Game::where('slug', $gameSlug)->firstOrFail();
-
-            return Inertia::render('Game/View', [
-                'game' => new GameResource($game),
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return redirect()->route('dashboard');
-        }
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function getExternalData()

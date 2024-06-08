@@ -17,7 +17,7 @@ Route::get('register', [RegisteredUserController::class, 'create'])
 
 Route::post('register', [RegisteredUserController::class, 'store']);
 
-Route::post('register', [RegisteredUserController::class, 'storeByAdmin'])
+Route::post('register/admin', [RegisteredUserController::class, 'storeByAdmin'])
     ->name('register.admin')
     ->middleware(CheckIsAdmin::class);
 
