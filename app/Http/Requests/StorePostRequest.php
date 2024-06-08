@@ -26,15 +26,15 @@ class StorePostRequest extends FormRequest
         return [
             'title' => ['max:15', 'string', 'nullable'],
             'body' => ['required', 'string', 'max:1000'],
+            'user_id' => ['numeric'],
+            'tags' => ['array', 'required', 'min:1', 'max:3'],
+            'tags.*.type' => ['required', 'string'],
+            'tags.*.tag_id' => ['required', 'numeric'],
             'attachments' => ['array', 'max:6'],
             'attachments.*' => [
                 File::image()
                     ->max('20mb')
             ],
-            'user_id' => ['numeric'],
-            'tags' => ['array', 'min:1', 'max:3'],
-            'tags.*.type' => ['required', 'string'],
-            'tags.*.tag_id' => ['required', 'numeric'],
         ];
     }
 
@@ -54,6 +54,7 @@ class StorePostRequest extends FormRequest
             'attachments.*.max' => 'El tamaño de la imagen no puede ser superior a 20Mb',
             'body.required' => 'El contenido no puede estar vacío',
             'body.max' => 'El contenido no puede tener más de 1000 carácteres',
+            'tags.required' => 'Debes añadir mínimo 1 tema',
             'tags.min' => 'Debes añadir mínimo 1 tema',
             'tags.max' => 'Debe tener máximo 3 temas',
             'title' => 'El título no puede contener más de 15 carácteres',
