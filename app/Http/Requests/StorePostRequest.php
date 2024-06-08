@@ -28,8 +28,6 @@ class StorePostRequest extends FormRequest
             'body' => ['required', 'string', 'max:1000'],
             'user_id' => ['numeric'],
             'tags' => ['array', 'required', 'min:1', 'max:3'],
-            'tags.*.type' => ['required', 'string'],
-            'tags.*.tag_id' => ['required', 'numeric'],
             'attachments' => ['array', 'max:6'],
             'attachments.*' => [
                 File::image()
