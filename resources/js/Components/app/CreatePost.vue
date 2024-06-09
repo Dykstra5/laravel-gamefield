@@ -45,7 +45,7 @@ const editorConfig = {
 function submit() {
     formPost.attachments = attachments.value.map(upFile => upFile.file);
     formPost.tags = tags.value.map(tags => tags);
-    console.log(formPost.value);
+    console.log(formPost.attachments);
     formPost.post(route('post.create'), {
         preserveScroll: true,
         onSuccess: function () {
