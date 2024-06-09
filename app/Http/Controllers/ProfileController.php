@@ -63,7 +63,7 @@ class ProfileController extends Controller
                 ->where('follower_id', $user->id)
                 ->get();
 
-                $allAttachments = DB::table('posts')
+            $allAttachments = DB::table('posts')
                 ->join('post_attachments', 'posts.id', '=', 'post_attachments.post_id')
                 ->where('posts.user_id', $user->id)
                 ->whereNull('posts.deleted_at') // Filtra los posts eliminados suavemente
@@ -131,8 +131,8 @@ class ProfileController extends Controller
     public function updateImages(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'cover' => ['nullable', 'image', 'max:20800'], // 2048 KB = 2 MB
-            'avatar' => ['nullable', 'image', 'max:20800'], // 2048 KB = 2 MB
+            'cover' => ['nullable', 'image', 'max:20800'], // 20 MB
+            'avatar' => ['nullable', 'image', 'max:20800'], // 20 MB
         ], [
             'cover.image' => 'La imagen de la cabecera debe ser una imagen.',
             'cover.max' => 'La imagen de la cabecera no puede ser mayor a 20MB.',
@@ -148,28 +148,36 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        $cover = $data['cover'] ?? null;
-        $avatar = $data['avatar'] ?? null;
+        try {
+            DB::beginTransaction();
 
-        $success = '';
-        if ($cover) {
-            if ($user->cover_path) {
-                Storage::disk('public')->delete($user->cover_path);
+            $cover = $data['cover'] ?? null;
+            $avatar = $data['avatar'] ?? null;
+
+            $success = '';
+            if ($cover) {
+                if ($user->cover_path) {
+                    Storage::disk('public')->delete($user->cover_path);
+                }
+                $path = $cover->store('user-' . $user->id, 'public');
+                $user->update(['cover_path' => $path]);
+                $success = 'La cabecera se ha actualizado correctamente';
             }
-            $path = $cover->store('user-' . $user->id, 'public');
-            $user->update(['cover_path' => $path]);
-            $success = 'La cabecera se ha actualizado correctamente';
-        }
 
-        if ($avatar) {
-            if ($user->avatar_path) {
-                Storage::disk('public')->delete($user->avatar_path);
+            if ($avatar) {
+                if ($user->avatar_path) {
+                    Storage::disk('public')->delete($user->avatar_path);
+                }
+                $path = $avatar->store('user-' . $user->id, 'public');
+                $user->update(['avatar_path' => $path]);
+                $success = 'La imagen de perfil se ha actualizado correctamente';
             }
-            $path = $avatar->store('user-' . $user->id, 'public');
-            $user->update(['avatar_path' => $path]);
-            $success = 'La imagen de perfil se ha actualizado correctamente';
-        }
 
-        return back()->with('success', $success);
+            DB::commit();
+            return back()->with('success', $success);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Hubo un problema al subir las imágenes.'])->withInput();
+        }
     }
 }

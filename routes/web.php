@@ -41,9 +41,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/{username}', [ProfileController::class, 'index'])
         ->name('profile');
 
-
-    // ->middleware(CheckIsAdmin::class);
-
     // Users
     Route::post('/user/{user}/follow', [UserController::class, 'followUser'])
         ->name('user.follow');
