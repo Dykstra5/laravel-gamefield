@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\File;
-use Ramsey\Uuid\Guid\Fields;
 
 class StorePostRequest extends FormRequest
 {
@@ -30,8 +29,8 @@ class StorePostRequest extends FormRequest
             'tags' => ['array', 'required', 'min:1', 'max:3'],
             'attachments' => ['array', 'max:6'],
             'attachments.*' => [
-                File::image()
-                    ->max('20mb')
+                'image',
+                'max:20480',
             ],
         ];
     }
@@ -45,7 +44,7 @@ class StorePostRequest extends FormRequest
         );
     }
 
-    public function messages ()
+    public function messages()
     {
         return [
             'attachments.*.image' => 'Solo se puede publicar imágenes',
