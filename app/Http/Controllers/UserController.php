@@ -7,8 +7,6 @@ use App\Models\Follower;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-use function Pest\Laravel\delete;
-
 class UserController extends Controller
 {
     public function followUser(User $user)
