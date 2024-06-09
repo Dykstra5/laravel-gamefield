@@ -10,7 +10,6 @@ use App\Models\Game;
 use App\Models\Genre;
 use App\Models\Platform;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 

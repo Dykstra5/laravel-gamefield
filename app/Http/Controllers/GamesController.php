@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdateGenreRequest;
-use App\Http\Resources\GameResource;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Genre;
 use App\Models\Platform;
 use Exception;
 use GuzzleHttp\Client;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 
 class GamesController extends Controller
 {
@@ -23,19 +18,12 @@ class GamesController extends Controller
      */
     public function getExternalData()
     {
-
         $client = new Client();
         try {
-            DB::table('genres')->truncate();
-            DB::table('platforms')->truncate();
-            DB::table('developers')->truncate();
-            DB::table('games')->truncate();
-
             $this->getExternalGenres($client);
             $this->getExternalPlatforms($client);
-            $this->getExternalDevelopers($client);
             $this->getExternalGames($client);
-            
+            $this->getExternalDevelopers($client);
         } catch (\Exception $e) {
             Log::error('Error fetching genres from RAWG API: ' . $e->getMessage());
             throw $e; // Relanza la excepción para que la transacción haga rollback
@@ -61,12 +49,15 @@ class GamesController extends Controller
                 $datos = json_decode($response->getBody(), true);
 
                 foreach ($datos['results'] as $genre) {
-                    Genre::create([
-                        'id' => $genre['id'],
-                        'name' => $genre['name'],
-                        'slug' => $genre['slug'],
-                        'image_background' => $genre['image_background'] ? $genre['image_background'] : ''
-                    ]);
+                    $exists = Genre::find($genre['id']);
+                    if (!$exists) {
+                        Genre::create([
+                            'id' => $genre['id'],
+                            'name' => $genre['name'],
+                            'slug' => $genre['slug'],
+                            'image_background' => $genre['image_background'] ? $genre['image_background'] : ''
+                        ]);
+                    }
                 }
 
                 $url = $datos['next']; // Actualizar la URL para la próxima petición
@@ -89,12 +80,15 @@ class GamesController extends Controller
                 $datos = json_decode($response->getBody(), true);
 
                 foreach ($datos['results'] as $platform) {
-                    Platform::create([
-                        'id' => $platform['id'],
-                        'name' => $platform['name'],
-                        'slug' => $platform['slug'],
-                        'image_background' => $platform['image_background'] ? $platform['image_background'] : ''
-                    ]);
+                    $exists = Platform::find($platform['id']);
+                    if (!$exists) {
+                        Platform::create([
+                            'id' => $platform['id'],
+                            'name' => $platform['name'],
+                            'slug' => $platform['slug'],
+                            'image_background' => $platform['image_background'] ? $platform['image_background'] : ''
+                        ]);
+                    }
                 }
 
                 $url = $datos['next']; // Actualizar la URL para la próxima petición
@@ -117,12 +111,15 @@ class GamesController extends Controller
                 $datos = json_decode($response->getBody(), true);
 
                 foreach ($datos['results'] as $developer) {
-                    Developer::create([
-                        'id' => $developer['id'],
-                        'name' => $developer['name'],
-                        'slug' => $developer['slug'],
-                        'image_background' => $developer['image_background'] ? $developer['image_background'] : ''
-                    ]);
+                    $exists = Developer::find($developer['id']);
+                    if (!$exists) {
+                        Developer::create([
+                            'id' => $developer['id'],
+                            'name' => $developer['name'],
+                            'slug' => $developer['slug'],
+                            'image_background' => $developer['image_background'] ? $developer['image_background'] : ''
+                        ]);
+                    }
                 }
                 $url = $datos['next']; // Actualizar la URL para la próxima petición
 
@@ -157,15 +154,18 @@ class GamesController extends Controller
                 $datos = json_decode($response->getBody(), true);
 
                 foreach ($datos['results'] as $game) {
-                    Game::create([
-                        'id' => $game['id'],
-                        'name' => $game['name'],
-                        'slug' => $game['slug'],
-                        'released' => $game['released'],
-                        'metacritic' => $game['metacritic'],
-                        'playtime' => $game['playtime'],
-                        'image_background' => $game['background_image'] ? $game['background_image'] : ''
-                    ]);
+                    $exists = Game::find($game['id']);
+                    if (!$exists) {
+                        Game::create([
+                            'id' => $game['id'],
+                            'name' => $game['name'],
+                            'slug' => $game['slug'],
+                            'released' => $game['released'],
+                            'metacritic' => $game['metacritic'],
+                            'playtime' => $game['playtime'],
+                            'image_background' => $game['background_image'] ? $game['background_image'] : ''
+                        ]);
+                    }
                 }
                 $url = $datos['next']; // Actualizar la URL para la próxima petición
 
@@ -196,6 +196,9 @@ class GamesController extends Controller
     {
         try {
             DB::table('genres')->truncate();
+            DB::table('platforms')->truncate();
+            DB::table('developers')->truncate();
+            DB::table('games')->truncate();
         } catch (Exception $e) {
             return response($e, 409);
         }

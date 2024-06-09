@@ -111,7 +111,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/games/get-external-data', [GamesController::class, 'getExternalData'])
     ->name('games.data')
     ->middleware(CheckIsAdmin::class);
-Route::delete('/games', [GamesController::class, 'destroyAll'])
+Route::delete('/games/destroy', [GamesController::class, 'destroyAll'])
     ->name('games.destroy')
     ->middleware(CheckIsAdmin::class);
 
