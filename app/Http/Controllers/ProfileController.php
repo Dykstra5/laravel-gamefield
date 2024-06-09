@@ -134,6 +134,8 @@ class ProfileController extends Controller
             'cover' => ['nullable', 'image', 'max:20800'], // 20 MB
             'avatar' => ['nullable', 'image', 'max:20800'], // 20 MB
         ], [
+            'cover' => 'La imagen de cabecera no se ha podido subir correctamente',
+            'avatar' => 'La imagen de avatar no se ha podido subir correctamente',
             'cover.image' => 'La imagen de la cabecera debe ser una imagen.',
             'cover.max' => 'La imagen de la cabecera no puede ser mayor a 20MB.',
             'avatar.image' => 'La imagen del avatar debe ser una imagen.',
