@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -27,30 +28,32 @@ class PostController extends Controller
         $user = $request->user();
 
         $tags = $data['tags'] ?? [];
-
         $allPaths = [];
 
         try {
             $post = Post::create($data);
+            Log::info('Post creado: ' . $post->id);
 
             $attachments = $data['attachments'] ?? [];
 
             foreach ($attachments as $attachment) {
+                Log::info('Procesando adjunto: ' . $attachment->getClientOriginalName());
                 $path = $attachment->store('attachment/post-' . $post->id, 'public');
-                $allPaths[] = $path;
-                PostAttachment::create([
-                    'post_id' => $post->id,
-                    'name' => $attachment->getClientOriginalName(),
-                    'path' => $path,
-                    'mime' => $attachment->getMimeType(),
-                    'size' => $attachment->getSize(),
-                    'created_by' => $user->id,
-                    'created_by' => $user->id,
-                ]);
+                if ($path) {
+                    Log::info('Adjunto guardado en: ' . $path);
+                    $allPaths[] = $path;
+                    PostAttachment::create([
+                        'post_id' => $post->id,
+                        'name' => $attachment->getClientOriginalName(),
+                        'path' => $path,
+                        'mime' => $attachment->getMimeType(),
+                        'size' => $attachment->getSize(),
+                        'created_by' => $user->id,
+                    ]);
+                } else {
+                    Log::error('Fallo al guardar el adjunto: ' . $attachment->getClientOriginalName());
+                }
             }
-
-            $tags = $data['tags'] ?? [];
-
 
             foreach ($tags as $tag) {
                 PostTag::create([
@@ -61,11 +64,14 @@ class PostController extends Controller
             }
 
             DB::commit();
+            Log::info('Transacción completada');
         } catch (\Throwable $th) {
+            Log::error('Error: ' . $th->getMessage());
             foreach ($allPaths as $path) {
                 Storage::disk('public')->delete($path);
             }
             DB::rollBack();
+            Log::info('Transacción revertida');
         }
 
         return back();
