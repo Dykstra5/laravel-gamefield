@@ -82,7 +82,7 @@ function search() {
                                 </template>
                             </Dropdown>
                             <div v-else>
-                                <Link :href="route('dashboard')">
+                                <Link :href="route('dashboard')" class="text-white">
                                 Iniciar Sesion
                                 </Link>
                             </div>
@@ -92,7 +92,7 @@ function search() {
                     <!-- Hamburger -->
                     <div class="-me-2 flex items-center sm:hidden">
                         <button @click="showingNavigationDropdown = !showingNavigationDropdown"
-                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-800 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out" 
+                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-800 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out"
                             :class="[
                                 isAdmin ? 'dark:hover:bg-emerald-600 dark:focus:bg-emerald-600' : 'dark:hover:bg-gray-900 dark:focus:bg-gray-900'
                             ]">
@@ -143,7 +143,9 @@ function search() {
                         </div>
                     </template>
                     <template v-else>
-                        Iniciar Sesión
+                        <Link :href="route('dashboard')" class="text-white ml-2 text-center">
+                        Iniciar Sesion
+                        </Link>
                     </template>
                 </div>
             </div>
