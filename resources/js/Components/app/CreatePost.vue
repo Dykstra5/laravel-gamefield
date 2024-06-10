@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import BalloonEditor from '@ckeditor/ckeditor5-build-balloon';
 import TextInput from '@/Components/TextInput.vue';
 import { ChevronDoubleUpIcon, PaperClipIcon, BookmarkIcon, XMarkIcon, TagIcon } from '@heroicons/vue/20/solid';
-import { ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
+import { DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
 import { isImage } from '@/functions';
 

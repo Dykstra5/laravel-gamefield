@@ -3,7 +3,6 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { HeartIcon, ChatBubbleOvalLeftIcon, EllipsisHorizontalIcon, ArrowDownTrayIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import { TrashIcon, HeartIcon as HeartIconSolid, ChatBubbleOvalLeftIcon as ChatBubbleOvalLeftIconSolid, EyeIcon, ShieldExclamationIcon, ShieldCheckIcon } from '@heroicons/vue/24/solid';
-import { TagIcon } from '@heroicons/vue/20/solid';
 import { router, usePage, Link } from '@inertiajs/vue3';
 import { isImage } from '@/functions';
 import axiosClient from '@/axiosClient';

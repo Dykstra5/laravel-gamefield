@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import TagItem from './TagItem.vue';
 
-const searchKeyword = ref('');
 const foundGame = ref(false);
 const foundGenre = ref(false);
 const foundPlatform = ref(false);

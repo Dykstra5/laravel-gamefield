@@ -1,7 +1,7 @@
 <script setup>
 import PostItem from '@/Components/app/PostItem.vue';
 import AttachmentsModal from '@/Components/app/AttachmentsModal.vue';
-import { nextTick, onMounted, onUpdated, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import axiosClient from '@/axiosClient';
 import { usePage } from '@inertiajs/vue3';
 
