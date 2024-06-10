@@ -220,7 +220,7 @@ function unfollow(user) {
 }
 
 const submit = () => {
-    form.post(route('register'), {
+    form.post(route('register.admin'), {
         onSuccess: () => {
             userCreated.value = true;
             form.reset();
