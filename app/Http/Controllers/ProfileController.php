@@ -101,7 +101,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return back();
+        return to_route('profile', $request->user()->username);
     }
 
     /**
