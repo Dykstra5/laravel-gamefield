@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
         ->name('user.search')
         ->middleware(CheckIsAdmin::class);
 
-    Route::delete('/user/{user}', [UserController::class, 'destroy'])
+    Route::delete('/user/{user}/delete', [UserController::class, 'destroy'])
         ->name('user.destroy')
         ->middleware(CheckIsAdmin::class);
 
